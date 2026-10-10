@@ -1,0 +1,30 @@
+---
+import Layout from '../layouts/Layout.astro'
+import { site } from '../site'
+---
+
+<Layout title="Sphericon">
+  <section class="py-12 text-center">
+    <h1 class="text-4xl font-bold tracking-tight sm:text-6xl">
+      Marketing automation you can own
+    </h1>
+    <p class="mx-auto mt-6 max-w-2xl text-lg text-slate-600 dark:text-slate-400">
+      Open-source, multi-tenant, API-first. Contacts, events, broadcasts and automations in one
+      platform you can self-host or run in the cloud.
+    </p>
+    <div class="mt-8 flex justify-center gap-4">
+      <a
+        href={site.signupUrl}
+        class="rounded-md bg-indigo-600 px-5 py-2.5 font-medium text-white hover:bg-indigo-500"
+      >
+        Get started
+      </a>
+      <a
+        href={site.docsUrl}
+        class="rounded-md border border-slate-300 px-5 py-2.5 font-medium hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-900"
+      >
+        Read the docs
+      </a>
+    </div>
+  </section>
+</Layout>

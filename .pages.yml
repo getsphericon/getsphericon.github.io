@@ -1,0 +1,21 @@
+# Config for Pages CMS (https://pagescms.org): a web editor over this repository.
+# Sign in with GitHub, pick this repo, and edit content without touching code.
+media:
+  input: public/images
+  output: /images
+content:
+  - name: blog
+    label: Blog
+    type: collection
+    path: src/content/blog
+    filename: '{primary}.md'
+    view:
+      fields: [title, date, draft]
+      primary: title
+      sort: [date]
+    fields:
+      - { name: title, label: Title, type: string, required: true }
+      - { name: description, label: Description, type: text, required: true }
+      - { name: date, label: Date, type: date, required: true }
+      - { name: draft, label: Draft (hidden from the site), type: boolean, default: true }
+      - { name: body, label: Body, type: rich-text }

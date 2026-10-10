@@ -1,0 +1,12 @@
+---
+import { site } from '../site'
+---
+
+<footer class="border-t border-slate-200 dark:border-slate-800">
+  <div
+    class="mx-auto flex max-w-5xl flex-col gap-2 px-4 py-8 text-sm text-slate-500 sm:flex-row sm:justify-between sm:px-6"
+  >
+    <p>© {new Date().getFullYear()} Sphericon</p>
+    <a href={site.githubUrl} class="hover:underline">GitHub</a>
+  </div>
+</footer>
