@@ -2,6 +2,9 @@
 title: "Monitoring"
 ---
 
+import { Code } from '@astrojs/starlight/components'
+import alerts from '../../../../generated/alerts.yaml?raw'
+
 Sphericon is one process on one PostgreSQL database, so monitoring comes down to four questions:
 is the process up and reachable, are requests succeeding, is background work keeping up, and is
 the database and the email provider healthy. This page lists the probes and metrics that answer
@@ -164,7 +167,7 @@ the chart manage them (`metrics.prometheusRule.enabled=true`; set
 `metrics.prometheusRule.labels` to match your Prometheus `ruleSelector`).
 `SphericonDown` matches `job=~".*sphericon.*"`: adjust it to your scrape job name.
 
-<<< ../../charts/sphericon/files/alerts.yaml{yaml}
+<Code code={alerts} lang="yaml" title="charts/sphericon/files/alerts.yaml" />
 
 | Alert                             | Severity | Fires when                                                |
 | --------------------------------- | -------- | --------------------------------------------------------- |
