@@ -19,14 +19,29 @@ const access = [
   { name: 'App', text: 'The workspace UI for contacts, segments and campaigns.', href: '/docs/guide/app' },
   { name: 'API', text: 'Everything the app does, over an OpenAPI-described REST API.', href: '/docs/guide/api' },
   { name: 'Webhooks', text: 'Delivery and engagement events pushed to your systems.', href: '/docs/guide/webhooks' },
-  { name: 'MCP', text: 'Let your agents work with contacts and campaigns.', href: '/docs/guide/mcp' },
+  { name: 'MCP', text: 'Claude or any MCP client operates the workspace, drafts only by default.', href: '/docs/guide/mcp' },
 ]
 
 const faq = [
   { q: 'What is Sphericon?', a: 'An open-source, multi-tenant, API-first marketing automation platform: contacts, events, segments, broadcasts and automations.' },
   { q: 'Can I self-host it?', a: 'Yes. The same product runs on your own infrastructure or on Sphericon Cloud. See the self-hosting guide.' },
   { q: 'How is consent handled?', a: 'Whether you may write to someone is derived on every send: suppressions, unsubscribes and, if you require it, confirmed opt-in.' },
-  { q: 'Does it work with agents?', a: 'Yes. There is an MCP server alongside the REST API and webhooks.' },
+  { q: 'Is it AI-first?', a: 'Yes. Every API operation is exposed as an MCP tool at /mcp, so an agent can read contacts, build segments, draft broadcasts and author automations. Sending stays behind its own scope and a human.' },
+  { q: 'Which agents can connect?', a: 'Claude Code and any MCP client with a Bearer token, or claude.ai custom connectors over OAuth 2.1.' },
+]
+
+const agentTools = [
+  { name: 'contacts_*', text: 'Read and upsert contacts, tags and events' },
+  { name: 'segments_*', text: 'Build segments and preview who matches' },
+  { name: 'broadcasts_*', text: 'Draft broadcasts, send tests, read reports' },
+  { name: 'automations_*', text: 'Author automations, dry-run their steps' },
+  { name: 'email_lint', text: 'Check a message before it is saved' },
+]
+
+const safety = [
+  { name: 'Drafts by default', text: 'Agents author broadcasts and automations as drafts. Sending needs its own scope plus mcp:send, otherwise the tools are not even listed.' },
+  { name: 'Consent only narrows', text: 'An agent can suppress an address or record an unsubscribe. Lifting a suppression is not available over the API or MCP.' },
+  { name: 'Contact text is data', text: 'Names, fields and event properties come back wrapped as untrusted data, and the model is told never to treat them as instructions.' },
 ]
 
 const card = 'border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-950'
@@ -44,13 +59,14 @@ const eyebrow = 'font-mono text-xs uppercase tracking-widest text-slate-500'
       href={site.githubUrl}
       class="inline-flex items-center gap-2 border border-slate-200 px-3 py-1 font-mono text-xs text-slate-600 hover:bg-slate-50 dark:border-slate-800 dark:text-slate-400 dark:hover:bg-slate-900"
     >
-      <span class="size-1.5 rounded-full bg-emerald-500"></span> Open source on GitHub
+      <span class="size-1.5 rounded-full bg-emerald-500"></span> Open source · AI-first · MCP server built in
     </a>
     <h1 class="mx-auto mt-6 max-w-3xl text-4xl font-bold tracking-tight sm:text-6xl">
-      Marketing automation you can own
+      AI-first marketing automation you can own
     </h1>
     <p class="mx-auto mt-6 max-w-2xl text-lg text-slate-600 dark:text-slate-400">
-      Know the people you talk to and reach them with the right email at the right moment.
+      Operate it from the app, the API or your AI agent. Every API operation is an MCP tool, so
+      Claude or any MCP client can build segments, draft broadcasts and author automations.
       Self-host it or run it in the cloud.
     </p>
     <div class="mt-8 flex flex-wrap justify-center gap-3">
@@ -66,8 +82,52 @@ const eyebrow = 'font-mono text-xs uppercase tracking-widest text-slate-500'
     </div>
   </section>
 
-  <!-- Model -->
+  <!-- AI-first / MCP -->
   <section class="py-20">
+    <p class={eyebrow}>AI-first</p>
+    <h2 class="mt-3 max-w-2xl text-3xl font-bold tracking-tight">Your agent can run the workspace</h2>
+    <p class="mt-3 max-w-2xl text-slate-600 dark:text-slate-400">
+      Sphericon serves a Model Context Protocol endpoint at <code class="font-mono text-sm">/mcp</code>, the same
+      binary and data as the API. The tools are projected from the API contract, not written by hand,
+      so an agent never lags behind the product.
+    </p>
+    <div class="mt-10 grid gap-6 lg:grid-cols-2">
+      <div class="border border-slate-200 bg-slate-950 p-5 font-mono text-xs leading-relaxed text-slate-200 dark:border-slate-800">
+        <p class="text-slate-500"># Connect Claude Code</p>
+        <p class="mt-2 whitespace-pre-wrap break-all">claude mcp add --transport http sphericon \
+  https://your-sphericon/mcp \
+  --header "Authorization: Bearer $SPHERICON_TOKEN"</p>
+        <p class="mt-5 text-slate-500"># Then ask</p>
+        <p class="mt-2 text-emerald-400">&gt; Draft a win-back broadcast for contacts who went quiet.</p>
+        <p class="mt-1 text-slate-400">segments_preview → broadcasts_create → email_lint</p>
+        <p class="mt-1 text-slate-400">Draft saved. Review and send it in the app.</p>
+      </div>
+      <div class="grid gap-px border border-slate-200 bg-slate-200 dark:border-slate-800 dark:bg-slate-800">
+        {agentTools.map((t) => (
+          <div class={`${card} flex items-baseline justify-between gap-4`}>
+            <code class="font-mono text-sm font-semibold">{t.name}</code>
+            <span class="text-right text-sm text-slate-600 dark:text-slate-400">{t.text}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+    <p class="mt-6 text-sm text-slate-600 dark:text-slate-400">
+      Clients that sign in, such as claude.ai custom connectors, connect over OAuth 2.1. Playbooks
+      for a welcome automation, a win-back broadcast and list hygiene are built in.
+      <a href="/docs/guide/mcp" class="font-medium underline">Read the MCP guide →</a>
+    </p>
+    <div class="mt-10 grid gap-4 sm:grid-cols-3">
+      {safety.map((s) => (
+        <div class={card}>
+          <h3 class="font-mono text-sm font-semibold">{s.name}</h3>
+          <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">{s.text}</p>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <!-- Model -->
+  <section class="border-t border-slate-200 py-20 dark:border-slate-800">
     <p class={eyebrow}>The model</p>
     <h2 class="mt-3 max-w-2xl text-3xl font-bold tracking-tight">Know your contacts, then write to the right ones</h2>
     <div class="mt-10 grid gap-px border border-slate-200 bg-slate-200 sm:grid-cols-2 dark:border-slate-800 dark:bg-slate-800">
