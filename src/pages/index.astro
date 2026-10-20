@@ -1,25 +1,48 @@
 ---
 import Layout from '../layouts/Layout.astro'
 import { site } from '../site'
+import { icons, tone, card, tile } from '../ui'
+import { useCases } from '../useCases'
 
 const model = [
-  { name: 'Contact', text: 'One record per person, identified or still anonymous, with typed custom fields and tags.' },
-  { name: 'Event', text: 'An immutable fact: signed_up, viewed_pricing, email.opened. Behavior you can segment on.' },
-  { name: 'Segment', text: 'A saved rule evaluated live. Membership is never copied, so there are no stale lists.' },
-  { name: 'Send-eligibility', text: 'Consent is derived, not a flag. Suppressions and opt-in are checked on every send path.' },
+  { name: 'Contact', icon: icons.user, tone: tone.indigo, text: 'One record per person, identified or still anonymous, with typed custom fields and tags.' },
+  { name: 'Event', icon: icons.zap, tone: tone.amber, text: 'An immutable fact: signed_up, viewed_pricing, email.opened. Behavior you can segment on.' },
+  { name: 'Segment', icon: icons.filter, tone: tone.emerald, text: 'A saved rule evaluated live. Membership is never copied, so there are no stale lists.' },
+  { name: 'Send-eligibility', icon: icons.shield, tone: tone.rose, text: 'Consent is derived, not a flag. Suppressions and opt-in are checked on every send path.' },
+]
+
+const flow = [
+  { n: 'Contact', c: 'from-indigo-500 to-indigo-600' },
+  { n: 'Event', c: 'from-amber-400 to-amber-500' },
+  { n: 'Segment', c: 'from-emerald-500 to-emerald-600' },
+  { n: 'Send', c: 'from-sky-500 to-sky-600' },
 ]
 
 const surfaces = [
-  { name: 'Broadcast', text: 'One email to a segment, now or scheduled, with a report.' },
-  { name: 'Automation', text: 'A sequence started by an event, run once per contact.' },
-  { name: 'Transactional', text: 'A single email your app triggers over the API, such as a receipt.' },
+  { name: 'Broadcast', icon: icons.send, tone: tone.sky, text: 'One email to a segment, now or scheduled, with a report.' },
+  { name: 'Automation', icon: icons.workflow, tone: tone.violet, text: 'A sequence started by an event, run once per contact.' },
+  { name: 'Transactional', icon: icons.receipt, tone: tone.emerald, text: 'A single email your app triggers over the API, such as a receipt.' },
 ]
 
 const access = [
-  { name: 'App', text: 'The workspace UI for contacts, segments and campaigns.', href: '/docs/guide/app' },
-  { name: 'API', text: 'Everything the app does, over an OpenAPI-described REST API.', href: '/docs/guide/api' },
-  { name: 'Webhooks', text: 'Delivery and engagement events pushed to your systems.', href: '/docs/guide/webhooks' },
-  { name: 'MCP', text: 'Claude or any MCP client operates the workspace, drafts only by default.', href: '/docs/guide/mcp' },
+  { name: 'App', icon: icons.layout, tone: tone.indigo, text: 'The workspace UI for contacts, segments and campaigns.', href: '/docs/guide/app' },
+  { name: 'API', icon: icons.code, tone: tone.sky, text: 'Everything the app does, over an OpenAPI-described REST API.', href: '/docs/guide/api' },
+  { name: 'Webhooks', icon: icons.webhook, tone: tone.amber, text: 'Delivery and engagement events pushed to your systems.', href: '/docs/guide/webhooks' },
+  { name: 'MCP', icon: icons.bot, tone: tone.violet, text: 'Claude or any MCP client operates the workspace, drafts only by default.', href: '/docs/guide/mcp' },
+]
+
+const agentTools = [
+  { name: 'contacts_*', dot: 'bg-indigo-400', text: 'Read and upsert contacts, tags and events' },
+  { name: 'segments_*', dot: 'bg-emerald-400', text: 'Build segments and preview who matches' },
+  { name: 'broadcasts_*', dot: 'bg-sky-400', text: 'Draft broadcasts, send tests, read reports' },
+  { name: 'automations_*', dot: 'bg-violet-400', text: 'Author automations, dry-run their steps' },
+  { name: 'email_lint', dot: 'bg-amber-400', text: 'Check a message before it is saved' },
+]
+
+const safety = [
+  { name: 'Drafts by default', icon: icons.send, text: 'Agents author broadcasts and automations as drafts. Sending needs its own scope plus mcp:send, otherwise the tools are not even listed.' },
+  { name: 'Consent only narrows', icon: icons.lock, text: 'An agent can suppress an address or record an unsubscribe. Lifting a suppression is not available over the API or MCP.' },
+  { name: 'Contact text is data', icon: icons.eye, text: 'Names, fields and event properties come back wrapped as untrusted data, and the model is told never to treat them as instructions.' },
 ]
 
 const faq = [
@@ -30,178 +53,240 @@ const faq = [
   { q: 'Which agents can connect?', a: 'Claude Code and any MCP client with a Bearer token, or claude.ai custom connectors over OAuth 2.1.' },
 ]
 
-const agentTools = [
-  { name: 'contacts_*', text: 'Read and upsert contacts, tags and events' },
-  { name: 'segments_*', text: 'Build segments and preview who matches' },
-  { name: 'broadcasts_*', text: 'Draft broadcasts, send tests, read reports' },
-  { name: 'automations_*', text: 'Author automations, dry-run their steps' },
-  { name: 'email_lint', text: 'Check a message before it is saved' },
-]
-
-const safety = [
-  { name: 'Drafts by default', text: 'Agents author broadcasts and automations as drafts. Sending needs its own scope plus mcp:send, otherwise the tools are not even listed.' },
-  { name: 'Consent only narrows', text: 'An agent can suppress an address or record an unsubscribe. Lifting a suppression is not available over the API or MCP.' },
-  { name: 'Contact text is data', text: 'Names, fields and event properties come back wrapped as untrusted data, and the model is told never to treat them as instructions.' },
-]
-
-const card = 'border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-950'
-const eyebrow = 'font-mono text-xs uppercase tracking-widest text-slate-500'
+const wrap = 'mx-auto max-w-5xl px-4 sm:px-6'
+const eyebrow = 'font-mono text-xs font-semibold uppercase tracking-widest text-indigo-600 dark:text-indigo-400'
+const primary =
+  'rounded-lg bg-indigo-600 px-5 py-2.5 font-medium text-white shadow-lg shadow-indigo-600/30 hover:bg-indigo-500'
 ---
 
-<Layout title="Sphericon">
+<Layout title="Sphericon" bare>
   <!-- Hero -->
-  <section class="relative -mx-4 border-b border-slate-200 px-4 pb-16 pt-12 text-center sm:-mx-6 sm:px-6 dark:border-slate-800">
-    <div
-      class="pointer-events-none absolute inset-0 -z-10 opacity-60 [background-image:radial-gradient(circle,#94a3b8_1px,transparent_1px)] [background-size:24px_24px] [mask-image:linear-gradient(to_bottom,black,transparent)]"
-    >
+  <section class="relative overflow-hidden border-b border-slate-200 dark:border-slate-800">
+    <div class="pointer-events-none absolute inset-0 -z-10">
+      <div class="absolute -top-32 left-1/4 size-[28rem] rounded-full bg-indigo-500/25 blur-3xl"></div>
+      <div class="absolute -top-20 right-1/4 size-[26rem] rounded-full bg-violet-500/25 blur-3xl"></div>
+      <div class="absolute top-40 left-1/2 size-[22rem] -translate-x-1/2 rounded-full bg-sky-400/20 blur-3xl"></div>
+      <div class="absolute inset-0 opacity-50 [background-image:radial-gradient(circle,#94a3b8_1px,transparent_1px)] [background-size:24px_24px] [mask-image:linear-gradient(to_bottom,black,transparent_70%)]"></div>
     </div>
-    <a
-      href={site.githubUrl}
-      class="inline-flex items-center gap-2 border border-slate-200 px-3 py-1 font-mono text-xs text-slate-600 hover:bg-slate-50 dark:border-slate-800 dark:text-slate-400 dark:hover:bg-slate-900"
-    >
-      <span class="size-1.5 rounded-full bg-emerald-500"></span> Open source · AI-first · MCP server built in
-    </a>
-    <h1 class="mx-auto mt-6 max-w-3xl text-4xl font-bold tracking-tight sm:text-6xl">
-      AI-first marketing automation you can own
-    </h1>
-    <ul class="mx-auto mt-8 flex max-w-2xl flex-wrap justify-center gap-2 font-mono text-sm">
-      {['MCP-native', 'On-premise', 'You own your data', 'SaaS'].map((t) => (
-        <li class="border border-slate-200 px-3 py-1.5 dark:border-slate-800">{t}</li>
-      ))}
-    </ul>
-    <div class="mt-8 flex flex-wrap justify-center gap-3">
-      <a href={site.signupUrl} class="bg-slate-900 px-5 py-2.5 font-medium text-white hover:bg-slate-700 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200">
-        Get started
+    <div class={`${wrap} pb-20 pt-16 text-center`}>
+      <a
+        href={site.githubUrl}
+        class="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-white/70 px-3 py-1 font-mono text-xs text-indigo-700 backdrop-blur hover:bg-white dark:border-indigo-500/30 dark:bg-slate-900/60 dark:text-indigo-300"
+      >
+        <span class="size-1.5 animate-pulse rounded-full bg-emerald-500"></span> Open source · AI-first · MCP server built in
       </a>
-      <a href={site.docsUrl} class="border border-slate-300 px-5 py-2.5 font-medium hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-900">
-        Read the docs
-      </a>
-    </div>
-    <div class="mx-auto mt-12 max-w-4xl border border-slate-200 bg-white p-1.5 shadow-xl dark:border-slate-800 dark:bg-slate-900">
-      <img src="/images/screenshot.png" alt="The Sphericon workspace overview" class="w-full" width="1600" height="900" />
-    </div>
-  </section>
-
-  <!-- AI-first / MCP -->
-  <section class="py-20">
-    <p class={eyebrow}>AI-first</p>
-    <h2 class="mt-3 max-w-2xl text-3xl font-bold tracking-tight">Your agent can run the workspace</h2>
-    <p class="mt-3 max-w-2xl text-slate-600 dark:text-slate-400">
-      Sphericon serves a Model Context Protocol endpoint at <code class="font-mono text-sm">/mcp</code>, the same
-      binary and data as the API. The tools are projected from the API contract, not written by hand,
-      so an agent never lags behind the product.
-    </p>
-    <div class="mt-10 grid gap-6 lg:grid-cols-2">
-      <div class="border border-slate-200 bg-slate-950 p-5 font-mono text-xs leading-relaxed text-slate-200 dark:border-slate-800">
-        <p class="text-slate-500"># Connect Claude Code</p>
-        <p class="mt-2 whitespace-pre-wrap break-all">claude mcp add --transport http sphericon \
-  https://your-sphericon/mcp \
-  --header "Authorization: Bearer $SPHERICON_TOKEN"</p>
-        <p class="mt-5 text-slate-500"># Then ask</p>
-        <p class="mt-2 text-emerald-400">&gt; Draft a win-back broadcast for contacts who went quiet.</p>
-        <p class="mt-1 text-slate-400">segments_preview → broadcasts_create → email_lint</p>
-        <p class="mt-1 text-slate-400">Draft saved. Review and send it in the app.</p>
+      <h1 class="mx-auto mt-6 max-w-3xl text-4xl font-bold tracking-tight sm:text-6xl">
+        <span class="bg-gradient-to-r from-indigo-600 via-violet-600 to-sky-500 bg-clip-text text-transparent">AI-first</span>{' '}
+        marketing automation you can own
+      </h1>
+      <ul class="mx-auto mt-8 flex max-w-2xl flex-wrap justify-center gap-2 text-sm font-medium">
+        <li class="flex items-center gap-2 rounded-full bg-violet-100 px-3.5 py-1.5 text-violet-700 dark:bg-violet-500/15 dark:text-violet-300"><span class="[&>svg]:size-4" set:html={icons.bot} />MCP-native</li>
+        <li class="flex items-center gap-2 rounded-full bg-sky-100 px-3.5 py-1.5 text-sky-700 dark:bg-sky-500/15 dark:text-sky-300"><span class="[&>svg]:size-4" set:html={icons.code} />On-premise</li>
+        <li class="flex items-center gap-2 rounded-full bg-emerald-100 px-3.5 py-1.5 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300"><span class="[&>svg]:size-4" set:html={icons.lock} />You own your data</li>
+        <li class="flex items-center gap-2 rounded-full bg-amber-100 px-3.5 py-1.5 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300"><span class="[&>svg]:size-4" set:html={icons.zap} />SaaS</li>
+      </ul>
+      <div class="mt-8 flex flex-wrap justify-center gap-3">
+        <a href={site.signupUrl} class={primary}>Get started</a>
+        <a href={site.docsUrl} class="rounded-lg border border-slate-300 bg-white/70 px-5 py-2.5 font-medium backdrop-blur hover:bg-white dark:border-slate-700 dark:bg-slate-900/60 dark:hover:bg-slate-900">
+          Read the docs
+        </a>
       </div>
-      <div class="grid gap-px border border-slate-200 bg-slate-200 dark:border-slate-800 dark:bg-slate-800">
-        {agentTools.map((t) => (
-          <div class={`${card} flex items-baseline justify-between gap-4`}>
-            <code class="font-mono text-sm font-semibold">{t.name}</code>
-            <span class="text-right text-sm text-slate-600 dark:text-slate-400">{t.text}</span>
+      <div class="relative mx-auto mt-14 max-w-4xl">
+        <div class="absolute -inset-4 -z-10 rounded-3xl bg-gradient-to-r from-indigo-500/30 via-violet-500/30 to-sky-500/30 blur-2xl"></div>
+        <div class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900">
+          <div class="flex items-center gap-1.5 border-b border-slate-200 px-4 py-2.5 dark:border-slate-700">
+            <span class="size-2.5 rounded-full bg-rose-400"></span>
+            <span class="size-2.5 rounded-full bg-amber-400"></span>
+            <span class="size-2.5 rounded-full bg-emerald-400"></span>
           </div>
-        ))}
-      </div>
-    </div>
-    <p class="mt-6 text-sm text-slate-600 dark:text-slate-400">
-      Clients that sign in, such as claude.ai custom connectors, connect over OAuth 2.1. Playbooks
-      for a welcome automation, a win-back broadcast and list hygiene are built in.
-      <a href="/docs/guide/mcp" class="font-medium underline">Read the MCP guide →</a>
-    </p>
-    <div class="mt-10 grid gap-4 sm:grid-cols-3">
-      {safety.map((s) => (
-        <div class={card}>
-          <h3 class="font-mono text-sm font-semibold">{s.name}</h3>
-          <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">{s.text}</p>
+          <img src="/images/screenshot.png" alt="The Sphericon workspace overview" class="w-full" width="1600" height="900" />
         </div>
-      ))}
+      </div>
     </div>
   </section>
 
   <!-- Model -->
-  <section class="border-t border-slate-200 py-20 dark:border-slate-800">
-    <p class={eyebrow}>The model</p>
-    <h2 class="mt-3 max-w-2xl text-3xl font-bold tracking-tight">Know your contacts, then write to the right ones</h2>
-    <div class="mt-10 grid gap-px border border-slate-200 bg-slate-200 sm:grid-cols-2 dark:border-slate-800 dark:bg-slate-800">
-      {model.map((m, i) => (
-        <div class={card}>
-          <p class="font-mono text-xs text-slate-400">0{i + 1}</p>
-          <h3 class="mt-2 text-lg font-semibold">{m.name}</h3>
-          <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">{m.text}</p>
-        </div>
-      ))}
+  <section class="py-20">
+    <div class={wrap}>
+      <p class={eyebrow}>The model</p>
+      <h2 class="mt-3 max-w-2xl text-3xl font-bold tracking-tight">Know your contacts, then write to the right ones</h2>
+
+      <div class="mt-10 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
+        {flow.map((s, i) => (
+          <>
+            <div class={`flex-1 rounded-lg bg-gradient-to-br ${s.c} px-4 py-3 text-center font-mono text-sm font-semibold text-white shadow-md`}>{s.n}</div>
+            {i < flow.length - 1 && <span class="text-center font-mono text-slate-400">→</span>}
+          </>
+        ))}
+      </div>
+
+      <div class="mt-8 grid gap-4 sm:grid-cols-2">
+        {model.map((m) => (
+          <div class={`${card} flex gap-4`}>
+            <div class={`${tile} ${m.tone} shrink-0`} set:html={m.icon} />
+            <div>
+              <h3 class="font-semibold">{m.name}</h3>
+              <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">{m.text}</p>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   </section>
 
   <!-- Surfaces -->
-  <section class="border-t border-slate-200 py-20 dark:border-slate-800">
-    <p class={eyebrow}>What you can send</p>
-    <h2 class="mt-3 max-w-2xl text-3xl font-bold tracking-tight">Three surfaces, one set of rules</h2>
-    <p class="mt-3 max-w-2xl text-slate-600 dark:text-slate-400">
-      Templates, sending domain checks and consent rules are shared by all of them.
-    </p>
-    <div class="mt-10 grid gap-4 sm:grid-cols-3">
-      {surfaces.map((s) => (
-        <div class={card}>
-          <h3 class="font-mono text-sm font-semibold">{s.name}</h3>
-          <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">{s.text}</p>
+  <section class="border-y border-slate-200 bg-gradient-to-b from-slate-50 to-indigo-50/60 py-20 dark:border-slate-800 dark:from-slate-950 dark:to-indigo-950/30">
+    <div class={wrap}>
+      <p class={eyebrow}>What you can send</p>
+      <h2 class="mt-3 max-w-2xl text-3xl font-bold tracking-tight">Three surfaces, one set of rules</h2>
+      <p class="mt-3 max-w-2xl text-slate-600 dark:text-slate-400">
+        Templates, sending domain checks and consent rules are shared by all of them.
+      </p>
+      <div class="mt-10 grid gap-4 sm:grid-cols-3">
+        {surfaces.map((s) => (
+          <div class={card}>
+            <div class={`${tile} ${s.tone}`} set:html={s.icon} />
+            <h3 class="mt-4 font-semibold">{s.name}</h3>
+            <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">{s.text}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Use cases -->
+  <section class="py-20">
+    <div class={wrap}>
+      <div class="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p class={eyebrow}>Use cases</p>
+          <h2 class="mt-3 max-w-2xl text-3xl font-bold tracking-tight">What teams do with it</h2>
         </div>
-      ))}
+        <a href="/use-cases/" class="text-sm font-medium text-indigo-600 hover:underline dark:text-indigo-400">All use cases →</a>
+      </div>
+      <div class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {useCases.map((u) => (
+          <a href={`/use-cases/#${u.slug}`} class={`${card} group block`}>
+            <div class={`${tile} ${u.tone}`} set:html={u.icon} />
+            <h3 class="mt-4 font-semibold">{u.name} <span class="text-slate-400 transition group-hover:translate-x-0.5">→</span></h3>
+            <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">{u.text}</p>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- AI-first / MCP -->
+  <section class="relative overflow-hidden bg-slate-950 py-20 text-white">
+    <div class="pointer-events-none absolute inset-0">
+      <div class="absolute -left-24 top-0 size-[26rem] rounded-full bg-violet-600/30 blur-3xl"></div>
+      <div class="absolute -right-24 bottom-0 size-[26rem] rounded-full bg-indigo-600/30 blur-3xl"></div>
+    </div>
+    <div class={`${wrap} relative`}>
+      <p class="font-mono text-xs font-semibold uppercase tracking-widest text-violet-300">AI-first</p>
+      <h2 class="mt-3 max-w-2xl text-3xl font-bold tracking-tight">Your agent can run the workspace</h2>
+      <p class="mt-3 max-w-2xl text-slate-300">
+        Sphericon serves a Model Context Protocol endpoint at <code class="font-mono text-sm text-violet-300">/mcp</code>, the same
+        binary and data as the API. The tools are projected from the API contract, not written by hand,
+        so an agent never lags behind the product.
+      </p>
+      <div class="mt-10 grid gap-6 lg:grid-cols-2">
+        <div class="overflow-hidden rounded-xl border border-white/10 bg-slate-900/80 shadow-2xl backdrop-blur">
+          <div class="flex items-center gap-1.5 border-b border-white/10 px-4 py-2.5">
+            <span class="size-2.5 rounded-full bg-rose-400"></span>
+            <span class="size-2.5 rounded-full bg-amber-400"></span>
+            <span class="size-2.5 rounded-full bg-emerald-400"></span>
+            <span class="ml-3 font-mono text-xs text-slate-500">claude</span>
+          </div>
+          <div class="p-5 font-mono text-xs leading-relaxed text-slate-200">
+            <p class="text-slate-500"># Connect Claude Code</p>
+            <p class="mt-2 whitespace-pre-wrap break-all"><span class="text-violet-300">claude mcp add</span> --transport http sphericon \
+  https://your-sphericon/mcp \
+  --header "Authorization: Bearer $SPHERICON_TOKEN"</p>
+            <p class="mt-5 text-slate-500"># Then ask</p>
+            <p class="mt-2 text-emerald-400">&gt; Draft a win-back broadcast for contacts who went quiet.</p>
+            <p class="mt-1 text-sky-300">segments_preview → broadcasts_create → email_lint</p>
+            <p class="mt-1 text-slate-400">Draft saved. Review and send it in the app.</p>
+          </div>
+        </div>
+        <div class="grid content-start gap-3">
+          {agentTools.map((t) => (
+            <div class="flex items-center justify-between gap-4 rounded-lg border border-white/10 bg-white/5 px-4 py-3 backdrop-blur">
+              <code class="flex items-center gap-2 font-mono text-sm font-semibold"><span class={`size-2 rounded-full ${t.dot}`}></span>{t.name}</code>
+              <span class="text-right text-sm text-slate-300">{t.text}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+      <p class="mt-6 text-sm text-slate-300">
+        Clients that sign in, such as claude.ai custom connectors, connect over OAuth 2.1. Playbooks
+        for a welcome automation, a win-back broadcast and list hygiene are built in.
+        <a href="/docs/guide/mcp" class="font-medium text-violet-300 underline">Read the MCP guide →</a>
+      </p>
+      <div class="mt-10 grid gap-4 sm:grid-cols-3">
+        {safety.map((s) => (
+          <div class="rounded-xl border border-white/10 bg-white/5 p-5 backdrop-blur">
+            <div class={`${tile} bg-violet-500/20 text-violet-300`} set:html={s.icon} />
+            <h3 class="mt-4 font-semibold">{s.name}</h3>
+            <p class="mt-2 text-sm text-slate-300">{s.text}</p>
+          </div>
+        ))}
+      </div>
     </div>
   </section>
 
   <!-- Access -->
-  <section class="border-t border-slate-200 py-20 dark:border-slate-800">
-    <p class={eyebrow}>For humans and agents</p>
-    <h2 class="mt-3 max-w-2xl text-3xl font-bold tracking-tight">Use it from the app, your code or an agent</h2>
-    <div class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      {access.map((a) => (
-        <a href={a.href} class={`${card} group block hover:bg-slate-50 dark:hover:bg-slate-900`}>
-          <h3 class="font-mono text-sm font-semibold">{a.name} <span class="text-slate-400 transition group-hover:translate-x-0.5">→</span></h3>
-          <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">{a.text}</p>
-        </a>
-      ))}
+  <section class="py-20">
+    <div class={wrap}>
+      <p class={eyebrow}>For humans and agents</p>
+      <h2 class="mt-3 max-w-2xl text-3xl font-bold tracking-tight">Use it from the app, your code or an agent</h2>
+      <div class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {access.map((a) => (
+          <a href={a.href} class={`${card} group block`}>
+            <div class={`${tile} ${a.tone}`} set:html={a.icon} />
+            <h3 class="mt-4 font-semibold">{a.name} <span class="text-slate-400 transition group-hover:translate-x-0.5">→</span></h3>
+            <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">{a.text}</p>
+          </a>
+        ))}
+      </div>
     </div>
   </section>
 
   <!-- CTA -->
-  <section class="border-y border-slate-200 bg-slate-50 px-6 py-16 text-center dark:border-slate-800 dark:bg-slate-900">
-    <h2 class="text-3xl font-bold tracking-tight">Start sending in minutes</h2>
-    <p class="mx-auto mt-3 max-w-xl text-slate-600 dark:text-slate-400">
-      Create a workspace on Sphericon Cloud, or run it yourself.
-    </p>
-    <div class="mt-8 flex flex-wrap justify-center gap-3">
-      <a href={site.signupUrl} class="bg-slate-900 px-5 py-2.5 font-medium text-white hover:bg-slate-700 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200">
-        Create your workspace
-      </a>
-      <a href="/docs/self-hosting" class="border border-slate-300 px-5 py-2.5 font-medium hover:bg-white dark:border-slate-700 dark:hover:bg-slate-800">
-        Self-host
-      </a>
+  <section class="px-4 sm:px-6">
+    <div class="relative mx-auto max-w-5xl overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-600 via-violet-600 to-sky-500 px-6 py-16 text-center text-white shadow-xl">
+      <div class="pointer-events-none absolute -right-16 -top-16 size-64 rounded-full bg-white/10 blur-2xl"></div>
+      <h2 class="relative text-3xl font-bold tracking-tight">Start sending in minutes</h2>
+      <p class="relative mx-auto mt-3 max-w-xl text-indigo-100">
+        Create a workspace on Sphericon Cloud, or run it yourself.
+      </p>
+      <div class="relative mt-8 flex flex-wrap justify-center gap-3">
+        <a href={site.signupUrl} class="rounded-lg bg-white px-5 py-2.5 font-medium text-indigo-700 shadow-lg hover:bg-indigo-50">
+          Create your workspace
+        </a>
+        <a href="/docs/self-hosting" class="rounded-lg border border-white/40 px-5 py-2.5 font-medium hover:bg-white/10">
+          Self-host
+        </a>
+      </div>
     </div>
   </section>
 
   <!-- FAQ -->
   <section class="py-20">
-    <p class={eyebrow}>FAQ</p>
-    <h2 class="mt-3 text-3xl font-bold tracking-tight">Questions</h2>
-    <div class="mt-8 divide-y divide-slate-200 border-y border-slate-200 dark:divide-slate-800 dark:border-slate-800">
-      {faq.map((f) => (
-        <details class="group py-4">
-          <summary class="flex cursor-pointer list-none items-center justify-between font-medium">
-            {f.q}
-            <span class="font-mono text-slate-400 group-open:rotate-45">+</span>
-          </summary>
-          <p class="mt-3 text-sm text-slate-600 dark:text-slate-400">{f.a}</p>
-        </details>
-      ))}
+    <div class="mx-auto max-w-3xl px-4 sm:px-6">
+      <p class={eyebrow}>FAQ</p>
+      <h2 class="mt-3 text-3xl font-bold tracking-tight">Questions</h2>
+      <div class="mt-8 space-y-3">
+        {faq.map((f) => (
+          <details class="group rounded-xl border border-slate-200 bg-white px-5 py-4 open:shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <summary class="flex cursor-pointer list-none items-center justify-between font-medium">
+              {f.q}
+              <span class="font-mono text-indigo-500 transition group-open:rotate-45">+</span>
+            </summary>
+            <p class="mt-3 text-sm text-slate-600 dark:text-slate-400">{f.a}</p>
+          </details>
+        ))}
+      </div>
     </div>
   </section>
 </Layout>
