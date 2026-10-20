@@ -22,3 +22,6 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# OpenAPI specifications fetched at build time (scripts/fetch-spec.mjs)
+src/generated/

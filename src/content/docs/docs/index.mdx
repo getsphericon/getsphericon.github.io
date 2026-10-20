@@ -1,0 +1,50 @@
+---
+title: Sphericon documentation
+description: Guides, operations and API reference for Sphericon, the open-core marketing automation platform.
+template: splash
+hero:
+  tagline: Guides, operations and API reference for Sphericon, the open-core marketing automation platform. Self-host it or use Sphericon Cloud.
+  actions:
+    - text: Quickstart
+      link: /docs/guide/quickstart
+      icon: right-arrow
+    - text: API reference
+      link: /docs/api/
+      variant: minimal
+    - text: Self-hosting
+      link: /docs/self-hosting
+      variant: minimal
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components'
+
+<CardGrid>
+  <Card title="Guide" icon="open-book">
+    Contacts, tracking, segments, sending, consent and webhooks, from first broadcast to automation.
+    [Introduction](/docs/guide/introduction)
+  </Card>
+  <Card title="API and MCP" icon="puzzle">
+    The external REST API with a full reference, and an MCP server so agents can work in a workspace.
+    [API reference](/docs/api/)
+  </Card>
+  <Card title="Export streams" icon="download">
+    Keep a copy of a workspace's events, messages, contacts, erasures and audit entries in your
+    warehouse, with a ClickHouse example (Enterprise). [Export streams](/docs/export-streams)
+  </Card>
+  <Card title="Self-hosting and operations" icon="setting">
+    One binary or image plus PostgreSQL. Configuration, backups, upgrades, monitoring and a runbook.
+    [Operations](/docs/operations)
+  </Card>
+  <Card title="Sphericon Cloud" icon="rocket">
+    Skip the operations. The hosted edition runs the same product for you.
+    [Sphericon Cloud](/docs/guide/cloud)
+  </Card>
+  <Card title="Deliverability and consent" icon="approve-check">
+    Unsubscribes, bounces and complaints are honored on every send path.
+    [Deliverability](/docs/guide/deliverability)
+  </Card>
+  <Card title="Open core" icon="github">
+    The core is AGPL-3.0. A small set of enterprise features is commercial and source-available.
+    [Source on GitHub](https://github.com/getsphericon/sphericon)
+  </Card>
+</CardGrid>

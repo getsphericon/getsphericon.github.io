@@ -2,6 +2,6 @@
 export const site = {
   appUrl: 'https://getsphericon.app',
   signupUrl: 'https://getsphericon.app/register',
-  docsUrl: 'https://docs.getsphericon.app',
+  docsUrl: '/docs/',
   githubUrl: 'https://github.com/getsphericon',
 }
