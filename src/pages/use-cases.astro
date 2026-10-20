@@ -1,5 +1,29 @@
 ---
-import Placeholder from '../components/Placeholder.astro'
+import Layout from '../layouts/Layout.astro'
+import { site } from '../site'
+import { useCases } from '../useCases'
+import { card, tile } from '../ui'
 ---
 
-<Placeholder title="Use cases" />
+<Layout title="Use cases" description="What teams do with Sphericon.">
+  <section class="pb-12 text-center">
+    <p class="font-mono text-xs font-semibold uppercase tracking-widest text-indigo-600 dark:text-indigo-400">Use cases</p>
+    <h1 class="mx-auto mt-3 max-w-3xl text-4xl font-bold tracking-tight sm:text-5xl">What you can do with Sphericon</h1>
+  </section>
+  <div class="grid gap-4 sm:grid-cols-2">
+    {useCases.map((u) => (
+      <section id={u.slug} class={`${card} scroll-mt-8`}>
+        <div class={`${tile} ${u.tone}`} set:html={u.icon} />
+        <h2 class="mt-4 text-lg font-semibold">{u.name}</h2>
+        <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">{u.text}</p>
+        <ol class="mt-4 list-decimal space-y-1 pl-5 text-sm text-slate-600 dark:text-slate-400">
+          {u.steps.map((s) => <li>{s}</li>)}
+        </ol>
+        <a href={u.docs} class="mt-4 inline-block text-sm font-medium text-indigo-600 hover:underline dark:text-indigo-400">Read the guide →</a>
+      </section>
+    ))}
+  </div>
+  <div class="mt-12 text-center">
+    <a href={site.signupUrl} class="rounded-lg bg-indigo-600 px-5 py-2.5 font-medium text-white shadow-lg shadow-indigo-600/30 hover:bg-indigo-500">Get started</a>
+  </div>
+</Layout>

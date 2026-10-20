@@ -7,9 +7,10 @@ interface Props {
   title: string
   description?: string
   noindex?: boolean
+  bare?: boolean
 }
 
-const { title, description = 'Open-source marketing automation platform.', noindex = false } = Astro.props
+const { title, description = 'Open-source marketing automation platform.', noindex = false, bare = false } = Astro.props
 const fullTitle = title === 'Sphericon' ? title : `${title} · Sphericon`
 ---
 
@@ -26,7 +27,7 @@ const fullTitle = title === 'Sphericon' ? title : `${title} · Sphericon`
   </head>
   <body class="bg-white text-slate-900 antialiased dark:bg-slate-950 dark:text-slate-100">
     <Header />
-    <main class="mx-auto max-w-5xl px-4 py-12 sm:px-6">
+    <main class={bare ? '' : 'mx-auto max-w-5xl px-4 py-12 sm:px-6'}>
       <slot />
     </main>
     <Footer />
