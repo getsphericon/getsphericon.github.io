@@ -64,11 +64,11 @@ const eyebrow = 'font-mono text-xs uppercase tracking-widest text-slate-500'
     <h1 class="mx-auto mt-6 max-w-3xl text-4xl font-bold tracking-tight sm:text-6xl">
       AI-first marketing automation you can own
     </h1>
-    <p class="mx-auto mt-6 max-w-2xl text-lg text-slate-600 dark:text-slate-400">
-      Operate it from the app, the API or your AI agent. Every API operation is an MCP tool, so
-      Claude or any MCP client can build segments, draft broadcasts and author automations.
-      Self-host it or run it in the cloud.
-    </p>
+    <ul class="mx-auto mt-8 flex max-w-2xl flex-wrap justify-center gap-2 font-mono text-sm">
+      {['MCP-native', 'On-premise', 'You own your data', 'SaaS'].map((t) => (
+        <li class="border border-slate-200 px-3 py-1.5 dark:border-slate-800">{t}</li>
+      ))}
+    </ul>
     <div class="mt-8 flex flex-wrap justify-center gap-3">
       <a href={site.signupUrl} class="bg-slate-900 px-5 py-2.5 font-medium text-white hover:bg-slate-700 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200">
         Get started
