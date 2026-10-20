@@ -1,11 +1,32 @@
 ---
 import { site } from '../site'
+import { products } from '../products'
 ---
 
 <header class="border-b border-slate-200 dark:border-slate-800">
   <div class="mx-auto flex max-w-5xl items-center justify-between px-4 py-4 sm:px-6">
     <a href="/" class="text-lg font-semibold">Sphericon</a>
-    <nav class="flex items-center gap-6 text-sm">
+    <nav class="flex items-center gap-4 text-sm sm:gap-6">
+      <div class="group relative">
+        <button type="button" class="flex items-center gap-1 hover:underline">
+          Product <span class="text-xs text-slate-400">▾</span>
+        </button>
+        <div
+          class="invisible absolute left-0 top-full z-10 w-72 border border-slate-200 bg-white pt-2 opacity-0 shadow-xl transition group-focus-within:visible group-focus-within:opacity-100 group-hover:visible group-hover:opacity-100 dark:border-slate-800 dark:bg-slate-950"
+        >
+          <ul class="p-1">
+            {products.map((p) => (
+              <li>
+                <a href={`/product/${p.slug}/`} class="block px-3 py-2 hover:bg-slate-50 dark:hover:bg-slate-900">
+                  <span class="block font-medium">{p.name}</span>
+                  <span class="block text-xs text-slate-500">{p.short}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+      <a href="/integrations/" class="hover:underline">Integrations</a>
       <a href="/pricing/" class="hover:underline">Pricing</a>
       <a href="/blog/" class="hover:underline">Blog</a>
       <a href={site.docsUrl} class="hover:underline">Docs</a>

@@ -1,0 +1,25 @@
+---
+import { getCollection } from 'astro:content'
+import Layout from '../../layouts/Layout.astro'
+
+const releases = (await getCollection('releases', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf(),
+)
+---
+
+<Layout title="Release notes" description="What changed in each Sphericon release.">
+  <h1 class="text-3xl font-bold">Release notes</h1>
+  {releases.length === 0 && <p class="mt-6 text-slate-500">No releases published yet.</p>}
+  <ul class="mt-8 divide-y divide-slate-200 border-y border-slate-200 dark:divide-slate-800 dark:border-slate-800">
+    {
+      releases.map((r) => (
+        <li class="py-5">
+          <a href={`/releases/${r.id}/`} class="text-xl font-semibold hover:underline">
+            <span class="font-mono">{r.data.version}</span> · {r.data.title}
+          </a>
+          <p class="text-sm text-slate-500">{r.data.date.toLocaleDateString('en-US', { dateStyle: 'long' })}</p>
+        </li>
+      ))
+    }
+  </ul>
+</Layout>

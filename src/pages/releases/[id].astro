@@ -1,0 +1,23 @@
+---
+import { getCollection, render } from 'astro:content'
+import Layout from '../../layouts/Layout.astro'
+
+export async function getStaticPaths() {
+  const releases = await getCollection('releases', ({ data }) => !data.draft)
+  return releases.map((release) => ({ params: { id: release.id }, props: { release } }))
+}
+
+const { release } = Astro.props
+const { Content } = await render(release)
+---
+
+<Layout title={`${release.data.version} · ${release.data.title}`}>
+  <article class="mx-auto max-w-2xl">
+    <p class="font-mono text-sm text-slate-500">{release.data.version}</p>
+    <h1 class="text-3xl font-bold">{release.data.title}</h1>
+    <p class="mt-2 text-sm text-slate-500">{release.data.date.toLocaleDateString('en-US', { dateStyle: 'long' })}</p>
+    <div class="mt-8 space-y-4 leading-7">
+      <Content />
+    </div>
+  </article>
+</Layout>

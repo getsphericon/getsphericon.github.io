@@ -1,12 +1,79 @@
 ---
 import { site } from '../site'
+import { products } from '../products'
+import { competitors } from '../compare'
+
+const columns = [
+  {
+    title: 'Product',
+    links: [
+      ...products.map((p) => ({ label: p.name, href: `/product/${p.slug}/` })),
+      { label: 'Integrations', href: '/integrations/' },
+      { label: 'Pricing', href: '/pricing/' },
+    ],
+  },
+  {
+    title: 'Resources',
+    links: [
+      { label: 'Documentation', href: site.docsUrl },
+      { label: 'Quickstart', href: '/docs/guide/quickstart' },
+      { label: 'API reference', href: '/docs/api/' },
+      { label: 'Self-hosting', href: '/docs/self-hosting' },
+      { label: 'Roadmap', href: '/docs/ROADMAP' },
+      { label: 'Release notes', href: '/releases/' },
+      { label: 'Blog', href: '/blog/' },
+      { label: 'Customers', href: '/customers/' },
+      { label: 'Use cases', href: '/use-cases/' },
+    ],
+  },
+  {
+    title: 'Compare',
+    links: [
+      ...competitors.map((c) => ({ label: `Sphericon vs ${c.name}`, href: `/compare/${c.slug}/` })),
+      { label: 'All comparisons', href: '/compare/' },
+    ],
+  },
+  {
+    title: 'Company',
+    links: [
+      { label: 'About', href: '/about/' },
+      { label: 'Careers', href: '/careers/' },
+      { label: 'Partners', href: '/partners/' },
+      { label: 'Contact', href: '/contact/' },
+      { label: 'Support', href: `mailto:${site.supportEmail}` },
+      { label: 'GitHub', href: site.githubUrl },
+    ],
+  },
+  {
+    title: 'Legal',
+    links: [
+      { label: 'Privacy policy', href: '/privacy/' },
+      { label: 'Terms of service', href: '/terms/' },
+      { label: 'Cookie policy', href: '/cookies/' },
+      { label: 'Security', href: '/security/' },
+      { label: 'Data processing agreement', href: '/dpa/' },
+    ],
+  },
+]
 ---
 
 <footer class="border-t border-slate-200 dark:border-slate-800">
-  <div
-    class="mx-auto flex max-w-5xl flex-col gap-2 px-4 py-8 text-sm text-slate-500 sm:flex-row sm:justify-between sm:px-6"
-  >
-    <p>© {new Date().getFullYear()} Sphericon</p>
-    <a href={site.githubUrl} class="hover:underline">GitHub</a>
+  <div class="mx-auto max-w-5xl px-4 py-12 sm:px-6">
+    <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-5">
+      {columns.map((c) => (
+        <div>
+          <h2 class="font-mono text-xs uppercase tracking-widest text-slate-500">{c.title}</h2>
+          <ul class="mt-4 space-y-2 text-sm">
+            {c.links.map((l) => (
+              <li><a href={l.href} class="text-slate-600 hover:underline dark:text-slate-400">{l.label}</a></li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </div>
+    <div class="mt-12 flex flex-col gap-2 border-t border-slate-200 pt-6 text-sm text-slate-500 sm:flex-row sm:justify-between dark:border-slate-800">
+      <p>© {new Date().getFullYear()} Sphericon</p>
+      <a href={`mailto:${site.supportEmail}`} class="hover:underline">{site.supportEmail}</a>
+    </div>
   </div>
 </footer>
