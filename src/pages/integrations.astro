@@ -1,0 +1,46 @@
+---
+import Layout from '../layouts/Layout.astro'
+import { site } from '../site'
+
+const integrations = [
+  { name: 'Tracker', text: 'Add it to your site or product to send events and identify people. Server-side events work too.', href: '/docs/guide/tracking', tag: 'Collect' },
+  { name: 'REST API', text: 'Everything the app does, described by an OpenAPI document, with scoped API tokens.', href: '/docs/guide/api', tag: 'Build' },
+  { name: 'Webhooks', text: 'Push events such as email.bounced to your own HTTP endpoint, so you react without polling.', href: '/docs/guide/webhooks', tag: 'React' },
+  { name: 'MCP', text: 'Connect Claude Code, any MCP client with a token, or claude.ai custom connectors over OAuth 2.1.', href: '/docs/guide/mcp', tag: 'Agents' },
+  { name: 'Email providers', text: 'Callbacks from SES, Postmark and Mailgun, plus a generic one, turn bounces and complaints into suppressions.', href: '/docs/guide/presets', tag: 'Deliver' },
+  { name: 'Export streams', text: 'Keep your own copy of events, messages, contacts, erasures and audit in a warehouse such as ClickHouse. Enterprise.', href: '/docs/export-streams', tag: 'Analyze' },
+]
+
+const eyebrow = 'font-mono text-xs uppercase tracking-widest text-slate-500'
+---
+
+<Layout title="Integrations" description="Connect Sphericon to your product, your providers, your warehouse and your agents.">
+  <section class="pb-12 text-center">
+    <p class={eyebrow}>Integrations</p>
+    <h1 class="mx-auto mt-3 max-w-3xl text-4xl font-bold tracking-tight sm:text-5xl">Fits into the stack you already run</h1>
+    <p class="mx-auto mt-4 max-w-xl text-lg text-slate-600 dark:text-slate-400">
+      Collect data, react to events, deliver mail and analyze results with the tools you already use.
+    </p>
+  </section>
+
+  <section class="grid gap-px border border-slate-200 bg-slate-200 sm:grid-cols-2 lg:grid-cols-3 dark:border-slate-800 dark:bg-slate-800">
+    {integrations.map((i) => (
+      <a href={i.href} class="group block bg-white p-5 hover:bg-slate-50 dark:bg-slate-950 dark:hover:bg-slate-900">
+        <p class="font-mono text-xs uppercase tracking-widest text-slate-400">{i.tag}</p>
+        <h2 class="mt-2 font-semibold">{i.name} <span class="text-slate-400 transition group-hover:translate-x-0.5">→</span></h2>
+        <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">{i.text}</p>
+      </a>
+    ))}
+  </section>
+
+  <section class="mt-16 border border-slate-200 bg-slate-50 px-6 py-12 text-center dark:border-slate-800 dark:bg-slate-900">
+    <h2 class="text-2xl font-bold tracking-tight">Need a provider we do not cover?</h2>
+    <p class="mx-auto mt-3 max-w-xl text-slate-600 dark:text-slate-400">
+      On a self-hosted instance you can add your own Preset for a provider's callbacks.
+    </p>
+    <div class="mt-6 flex flex-wrap justify-center gap-3">
+      <a href="/docs/guide/presets" class="border border-slate-300 px-5 py-2.5 font-medium hover:bg-white dark:border-slate-700 dark:hover:bg-slate-800">Write a Preset</a>
+      <a href={site.signupUrl} class="bg-slate-900 px-5 py-2.5 font-medium text-white hover:bg-slate-700 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200">Get started</a>
+    </div>
+  </section>
+</Layout>

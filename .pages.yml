@@ -19,6 +19,21 @@ content:
       - { name: date, label: Date, type: date, required: true }
       - { name: draft, label: Draft (hidden from the site), type: boolean, default: true }
       - { name: body, label: Body, type: rich-text }
+  - name: releases
+    label: Release notes
+    type: collection
+    path: src/content/releases
+    filename: '{primary}.md'
+    view:
+      fields: [version, title, date, draft]
+      primary: version
+      sort: [date]
+    fields:
+      - { name: version, label: Version, type: string, required: true }
+      - { name: title, label: Title, type: string, required: true }
+      - { name: date, label: Date, type: date, required: true }
+      - { name: draft, label: Draft (hidden from the site), type: boolean, default: true }
+      - { name: body, label: Body, type: rich-text }
   - name: docs
     label: Documentation
     type: collection

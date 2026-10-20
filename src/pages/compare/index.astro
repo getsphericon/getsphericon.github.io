@@ -1,0 +1,21 @@
+---
+import Layout from '../../layouts/Layout.astro'
+import { competitors } from '../../compare'
+---
+
+<Layout title="Compare" noindex>
+  <section class="pb-12 text-center">
+    <p class="font-mono text-xs uppercase tracking-widest text-slate-500">Compare</p>
+    <h1 class="mx-auto mt-3 max-w-3xl text-4xl font-bold tracking-tight sm:text-5xl">Sphericon and the alternatives</h1>
+    <p class="mx-auto mt-4 max-w-xl text-lg text-slate-600 dark:text-slate-400">Detailed comparisons are coming soon.</p>
+  </section>
+  <ul class="grid gap-px border border-slate-200 bg-slate-200 sm:grid-cols-2 dark:border-slate-800 dark:bg-slate-800">
+    {competitors.map((c) => (
+      <li>
+        <a href={`/compare/${c.slug}/`} class="block bg-white p-5 font-mono text-sm font-semibold hover:bg-slate-50 dark:bg-slate-950 dark:hover:bg-slate-900">
+          Sphericon vs {c.name} <span class="text-slate-400">→</span>
+        </a>
+      </li>
+    ))}
+  </ul>
+</Layout>

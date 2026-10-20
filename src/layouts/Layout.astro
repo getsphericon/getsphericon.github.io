@@ -6,9 +6,10 @@ import Footer from '../components/Footer.astro'
 interface Props {
   title: string
   description?: string
+  noindex?: boolean
 }
 
-const { title, description = 'Open-source marketing automation platform.' } = Astro.props
+const { title, description = 'Open-source marketing automation platform.', noindex = false } = Astro.props
 const fullTitle = title === 'Sphericon' ? title : `${title} · Sphericon`
 ---
 
@@ -19,6 +20,7 @@ const fullTitle = title === 'Sphericon' ? title : `${title} · Sphericon`
     <meta name="viewport" content="width=device-width" />
     <meta name="generator" content={Astro.generator} />
     <meta name="description" content={description} />
+    {noindex && <meta name="robots" content="noindex" />}
     <link rel="canonical" href={new URL(Astro.url.pathname, Astro.site)} />
     <title>{fullTitle}</title>
   </head>

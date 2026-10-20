@@ -1,0 +1,12 @@
+---
+import Placeholder from '../../components/Placeholder.astro'
+import { competitors } from '../../compare'
+
+export function getStaticPaths() {
+  return competitors.map((competitor) => ({ params: { slug: competitor.slug }, props: { competitor } }))
+}
+
+const { competitor } = Astro.props
+---
+
+<Placeholder title={`Sphericon vs ${competitor.name}`} />
