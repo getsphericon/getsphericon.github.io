@@ -1,0 +1,106 @@
+---
+import Layout from '../layouts/Layout.astro'
+import { site } from '../site'
+
+const plans = [
+  {
+    name: 'Self-hosted',
+    tag: 'On-premise',
+    text: 'Run Sphericon on your own infrastructure. You own the data and the server.',
+    points: ['Open source', 'Binary or image plus PostgreSQL', 'You apply upgrades and schedule backups', 'API, tracker and MCP on your own origin'],
+    cta: { label: 'Read the self-hosting guide', href: '/docs/self-hosting' },
+    primary: false,
+  },
+  {
+    name: 'Sphericon Cloud',
+    tag: 'SaaS',
+    text: 'The hosted edition, run by the people who build it. Same product, nothing to operate.',
+    points: ['Upgrades and backups handled for you', 'api., t. and mcp.getsphericon.app hosts', 'Same data model, API and MCP as self-hosted', 'Move to your own server later: a migration, not a rewrite'],
+    cta: { label: 'Create a workspace', href: site.signupUrl },
+    primary: true,
+  },
+]
+
+const rows = [
+  ['Running it', 'You run the binary or image and PostgreSQL', 'Run for you'],
+  ['Upgrades', 'You apply them', 'Applied for you'],
+  ['Backups', 'You schedule and test them', 'Handled for you'],
+  ['API host', 'Your own origin', 'api.getsphericon.app'],
+  ['Tracker host', 'Your own origin', 't.getsphericon.app'],
+  ['MCP host', 'Your own origin', 'mcp.getsphericon.app'],
+]
+
+const faq = [
+  { q: 'Is it the same product in both editions?', a: 'Yes. The data model, the API, the tracker and the MCP server are identical, so everything in the docs applies to both.' },
+  { q: 'Can I switch later?', a: 'Yes. Leaving Cloud for your own server is a migration, not a rewrite.' },
+  { q: 'Where do I see Cloud prices?', a: 'Create a workspace in the app to see the current plans.' },
+]
+
+const eyebrow = 'font-mono text-xs uppercase tracking-widest text-slate-500'
+---
+
+<Layout title="Pricing" description="Self-host Sphericon or run it on Sphericon Cloud.">
+  <section class="pb-12 text-center">
+    <p class={eyebrow}>Pricing</p>
+    <h1 class="mx-auto mt-3 max-w-2xl text-4xl font-bold tracking-tight sm:text-5xl">Own it, or let us run it</h1>
+    <p class="mx-auto mt-4 max-w-xl text-slate-600 dark:text-slate-400">One product, two ways to run it.</p>
+  </section>
+
+  <section class="grid gap-px border border-slate-200 bg-slate-200 md:grid-cols-2 dark:border-slate-800 dark:bg-slate-800">
+    {plans.map((p) => (
+      <div class="flex flex-col bg-white p-6 dark:bg-slate-950">
+        <p class="font-mono text-xs uppercase tracking-widest text-slate-500">{p.tag}</p>
+        <h2 class="mt-2 text-2xl font-bold">{p.name}</h2>
+        <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">{p.text}</p>
+        <ul class="mt-6 space-y-2 text-sm">
+          {p.points.map((pt) => (
+            <li class="flex gap-2"><span class="font-mono text-emerald-500">✓</span>{pt}</li>
+          ))}
+        </ul>
+        <a
+          href={p.cta.href}
+          class:list={[
+            'mt-8 px-5 py-2.5 text-center font-medium',
+            p.primary
+              ? 'bg-slate-900 text-white hover:bg-slate-700 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200'
+              : 'border border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-900',
+          ]}
+        >
+          {p.cta.label}
+        </a>
+      </div>
+    ))}
+  </section>
+
+  <section class="py-16">
+    <p class={eyebrow}>Compare</p>
+    <h2 class="mt-3 text-2xl font-bold tracking-tight">What changes between the two</h2>
+    <div class="mt-6 overflow-x-auto border border-slate-200 dark:border-slate-800">
+      <table class="w-full text-left text-sm">
+        <thead class="bg-slate-50 font-mono text-xs uppercase tracking-widest text-slate-500 dark:bg-slate-900">
+          <tr><th class="p-3"></th><th class="p-3">Self-hosted</th><th class="p-3">Cloud</th></tr>
+        </thead>
+        <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
+          {rows.map((r) => (
+            <tr><td class="p-3 font-medium">{r[0]}</td><td class="p-3 text-slate-600 dark:text-slate-400">{r[1]}</td><td class="p-3 text-slate-600 dark:text-slate-400">{r[2]}</td></tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="pb-8">
+    <p class={eyebrow}>FAQ</p>
+    <div class="mt-6 divide-y divide-slate-200 border-y border-slate-200 dark:divide-slate-800 dark:border-slate-800">
+      {faq.map((f) => (
+        <details class="group py-4">
+          <summary class="flex cursor-pointer list-none items-center justify-between font-medium">
+            {f.q}
+            <span class="font-mono text-slate-400 group-open:rotate-45">+</span>
+          </summary>
+          <p class="mt-3 text-sm text-slate-600 dark:text-slate-400">{f.a}</p>
+        </details>
+      ))}
+    </div>
+  </section>
+</Layout>
