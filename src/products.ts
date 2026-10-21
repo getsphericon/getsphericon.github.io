@@ -13,6 +13,8 @@ export interface Product {
   headline: string
   lede: string
   example: { title: string; lines: Line[] }
+  // Alt text of the app screenshot at /images/product/<slug>.png (see Screenshot in the product page)
+  screenshot: string
   benefits: { icon: Icon; title: string; text: string }[]
   steps: { title: string; text: string }[]
   closing: string
@@ -51,6 +53,7 @@ export const products: Product[] = [
     ],
     closing: 'Start knowing your audience',
     docs: '/docs/guide/tracking',
+    screenshot: 'A contact profile in Sphericon: details, custom fields and a timeline of the events the contact triggered',
   },
   {
     slug: 'segments',
@@ -62,7 +65,7 @@ export const products: Product[] = [
       title: 'segment: almost customers',
       lines: [
         ['Match all of', 'dim'],
-        ['  tag            is  trial', 'accent'],
+        ['  plan           is  free', 'accent'],
         ['  viewed_pricing did in the last 14 days', 'accent'],
         ['  email.opened   did not in the last 30 days', 'accent'],
         [''],
@@ -82,6 +85,7 @@ export const products: Product[] = [
     ],
     closing: 'Build your first segment',
     docs: '/docs/guide/segments',
+    screenshot: 'The Sphericon segment editor: a rule combining plan, a pricing-page view and email opens, with a live count of 11 matching contacts',
   },
   {
     slug: 'broadcasts',
@@ -113,6 +117,7 @@ export const products: Product[] = [
     ],
     closing: 'Send your first broadcast',
     docs: '/docs/guide/sending',
+    screenshot: 'The report of a sent broadcast in Sphericon: recipients, opens, clicks, failures and the delivery, open and click rates',
   },
   {
     slug: 'automations',
@@ -144,6 +149,7 @@ export const products: Product[] = [
     ],
     closing: 'Automate your first sequence',
     docs: '/docs/guide/sending',
+    screenshot: 'The Sphericon automations list: onboarding, trial nudge and win-back sequences with their triggers and status',
   },
   {
     slug: 'transactional',
@@ -176,6 +182,7 @@ export const products: Product[] = [
     ],
     closing: 'Send your first receipt',
     docs: '/docs/guide/sending',
+    screenshot: 'The Sphericon history of transactional emails, with sent, suppressed and failed messages',
   },
   {
     slug: 'deliverability',
@@ -206,6 +213,7 @@ export const products: Product[] = [
     ],
     closing: 'Send mail you can stand behind',
     docs: '/docs/guide/deliverability',
+    screenshot: 'Sphericon sending settings: connected providers with send limits, verified sending domains and the suppression list',
   },
   {
     slug: 'ai-agents',
@@ -234,5 +242,6 @@ export const products: Product[] = [
     ],
     closing: 'Connect your agent',
     docs: '/docs/guide/mcp',
+    screenshot: 'Sphericon API keys, including scoped tokens created for AI agents over MCP',
   },
 ]

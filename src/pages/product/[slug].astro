@@ -51,6 +51,22 @@ const lineTone = {
     </div>
   </section>
 
+  <!-- In the app -->
+  <section class="mx-auto max-w-5xl px-4 pt-20 sm:px-6">
+    <p class={eyebrow}>In the app</p>
+    <div class="relative mt-8">
+      <div class="absolute -inset-4 -z-10 rounded-3xl bg-gradient-to-r from-indigo-500/10 to-indigo-500/10 blur-2xl"></div>
+      <div class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900">
+        <div class="flex items-center gap-1.5 border-b border-slate-200 px-4 py-2.5 dark:border-slate-700">
+          <span class="size-2.5 rounded-full bg-rose-400"></span>
+          <span class="size-2.5 rounded-full bg-amber-400"></span>
+          <span class="size-2.5 rounded-full bg-emerald-400"></span>
+        </div>
+        <img src={`/images/product/${product.slug}.png`} alt={product.screenshot} class="w-full" width="2880" height="1660" loading="lazy" />
+      </div>
+    </div>
+  </section>
+
   <!-- Benefits -->
   <section class="mx-auto max-w-5xl px-4 py-20 sm:px-6">
     <div class="grid gap-4 sm:grid-cols-2">
