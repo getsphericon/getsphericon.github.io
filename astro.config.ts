@@ -15,6 +15,7 @@ export default defineConfig({
   integrations: [
     starlight({
       title: 'Sphericon docs',
+      logo: { src: './src/assets/logo.svg', alt: 'Sphericon' },
       description: 'Guides, operations and API reference for Sphericon.',
       // The documentation lives under /docs; the marketing pages are Astro pages at the root.
       disable404Route: true,
