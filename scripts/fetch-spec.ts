@@ -4,7 +4,14 @@
 // are not kept here; src/generated/ is ignored by git.
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 
-const { repository, ref, specs, files = [] } = JSON.parse(await readFile(new URL('../docs-source.json', import.meta.url), 'utf8'))
+interface DocsSource {
+  repository: string
+  ref: string
+  specs: string[]
+  files?: string[]
+}
+
+const { repository, ref, specs, files = [] }: DocsSource = JSON.parse(await readFile(new URL('../docs-source.json', import.meta.url), 'utf8'))
 const outDir = new URL('../src/generated/', import.meta.url)
 await mkdir(outDir, { recursive: true })
 
@@ -20,6 +27,6 @@ for (const path of files) {
   const url = `https://raw.githubusercontent.com/${repository}/${ref}/${path}`
   const response = await fetch(url)
   if (!response.ok) throw new Error(`${url}: ${response.status}`)
-  await writeFile(new URL(path.split('/').pop(), outDir), await response.text())
+  await writeFile(new URL(path.split('/').pop()!, outDir), await response.text())
   console.log(`fetched ${path} at ${ref.slice(0, 7)}`)
 }

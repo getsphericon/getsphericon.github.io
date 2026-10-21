@@ -19,7 +19,7 @@ A post with `draft: true` is not published.
 ## Documentation
 
 The pages are Markdown files in `src/content/docs/docs/`, edited like blog posts (Pages CMS, collection
-Documentation) and published on the site's own cycle. The sidebar is in `astro.config.mjs`. The API
+Documentation) and published on the site's own cycle. The sidebar is in `astro.config.ts`. The API
 reference is generated from the app's OpenAPI documents, which `npm run build` fetches at the commit
 pinned in `docs-source.json` into `src/generated/` (not committed): move the pin to the new release
 tag when the app ships one. A link that no longer resolves fails the build.
@@ -36,5 +36,5 @@ npm run dev      # http://localhost:4321
 npm run build    # static output in dist/
 ```
 
-Node 22.12 or newer. Pages live in `src/pages/`, shared pieces in `src/components/` and
+Node 22.18 or newer. Pages live in `src/pages/`, shared pieces in `src/components/` and
 `src/layouts/`.
