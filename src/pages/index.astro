@@ -18,11 +18,15 @@ const flow = [
   { n: 'Send', c: 'border border-slate-200 bg-white text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-white' },
 ]
 
-const surfaces = [
-  { name: 'Broadcast', icon: icons.send, tone: tone.sky, text: 'One email to a segment, now or scheduled, with a report.' },
-  { name: 'Automation', icon: icons.workflow, tone: tone.violet, text: 'A sequence started by an event, run once per contact.' },
-  { name: 'Transactional', icon: icons.receipt, tone: tone.emerald, text: 'A single email your app triggers over the API, such as a receipt.' },
+const timeline = [
+  { icon: icons.zap, title: 'A visitor looks at pricing', text: 'The tracker records the event on an anonymous visitor.', tag: 'viewed_pricing' },
+  { icon: icons.user, title: 'They sign up', text: 'Identify binds the visitor to a contact, and what they did earlier is stitched onto it.', tag: 'identify' },
+  { icon: icons.filter, title: 'A segment picks them up', text: 'Rules are evaluated live, so they match the moment their data says so.', tag: 'segment' },
+  { icon: icons.workflow, title: 'An automation welcomes them', text: 'Started by the event, run once per contact, with consent checked on every send.', tag: 'automation' },
+  { icon: icons.eye, title: 'You see what happened', text: 'Sent, opened, clicked, unsubscribed. Those are events too, so you can segment on them.', tag: 'report' },
 ]
+
+const works = ['SMTP', 'Amazon SES', 'Postmark', 'Mailgun', 'ClickHouse', 'Webhooks', 'OpenAPI', 'MCP']
 
 const access = [
   { name: 'App', icon: icons.layout, tone: tone.indigo, text: 'The workspace UI for contacts, segments and campaigns.', href: '/docs/guide/app' },
@@ -118,21 +122,21 @@ const primary =
         ))}
       </div>
 
-      <div class="mt-8 grid gap-4 sm:grid-cols-2">
+      <dl class="mt-12 grid gap-x-12 gap-y-8 sm:grid-cols-2">
         {model.map((m) => (
-          <div class={`${card} flex gap-4`}>
-            <div class={`${tile} ${m.tone} shrink-0`} set:html={m.icon} />
+          <div class="flex gap-4">
+            <span class="mt-0.5 text-indigo-600 dark:text-indigo-400" set:html={m.icon} />
             <div>
-              <h3 class="font-semibold">{m.name}</h3>
-              <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">{m.text}</p>
+              <dt class="font-semibold">{m.name}</dt>
+              <dd class="mt-1 text-sm text-slate-600 dark:text-slate-400">{m.text}</dd>
             </div>
           </div>
         ))}
-      </div>
+      </dl>
     </div>
   </section>
 
-  <!-- Surfaces -->
+  <!-- Surfaces (bento) -->
   <section class="border-y border-slate-200 bg-slate-50 py-20 dark:border-slate-800 dark:bg-slate-900/40">
     <div class={wrap}>
       <p class={eyebrow}>What you can send</p>
@@ -140,15 +144,64 @@ const primary =
       <p class="mt-3 max-w-2xl text-slate-600 dark:text-slate-400">
         Templates, sending domain checks and consent rules are shared by all of them.
       </p>
-      <div class="mt-10 grid gap-4 sm:grid-cols-3">
-        {surfaces.map((s) => (
-          <div class={card}>
-            <div class={`${tile} ${s.tone}`} set:html={s.icon} />
-            <h3 class="mt-4 font-semibold">{s.name}</h3>
-            <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">{s.text}</p>
+      <div class="mt-10 grid gap-4 md:grid-cols-3">
+        <div class={`${card} md:col-span-2`}>
+          <div class={`${tile} ${tone.indigo}`} set:html={icons.send} />
+          <h3 class="mt-4 font-semibold">Broadcast</h3>
+          <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">One email to a segment, now or scheduled, with a report of sent, opened, clicked and unsubscribed.</p>
+          <div class="mt-5 flex flex-wrap items-center gap-2 text-slate-400">
+            {['draft', 'scheduled', 'sending', 'sent'].map((st, i, all) => (
+              <>
+                <span class="rounded-md border border-slate-200 bg-slate-50 px-2 py-1 font-mono text-xs dark:border-slate-700 dark:bg-slate-800 text-slate-700 dark:text-slate-200">{st}</span>
+                {i < all.length - 1 && <span class="font-mono text-xs">→</span>}
+              </>
+            ))}
           </div>
-        ))}
+        </div>
+        <div class={card}>
+          <div class={`${tile} ${tone.indigo}`} set:html={icons.receipt} />
+          <h3 class="mt-4 font-semibold">Transactional</h3>
+          <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">A single email your app triggers over the API, such as a receipt.</p>
+          <p class="mt-5"><span class="rounded-md border border-slate-200 bg-slate-50 px-2 py-1 font-mono text-xs dark:border-slate-700 dark:bg-slate-800 text-slate-700 dark:text-slate-200">POST /api/emails</span></p>
+        </div>
+        <div class={`${card} md:col-span-3`}>
+          <div class="flex flex-wrap items-start justify-between gap-6">
+            <div class="max-w-md">
+              <div class={`${tile} ${tone.indigo}`} set:html={icons.workflow} />
+              <h3 class="mt-4 font-semibold">Automation</h3>
+              <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">A sequence started by an event, run once per contact. Created as a draft, live only when you activate it.</p>
+            </div>
+            <div class="flex flex-wrap items-center gap-2 text-slate-400">
+              {['signed_up', 'email', 'wait 2 days', 'email', 'apply_tag'].map((st, i, all) => (
+                <>
+                  <span class="rounded-md border border-slate-200 bg-slate-50 px-2 py-1 font-mono text-xs dark:border-slate-700 dark:bg-slate-800 text-slate-700 dark:text-slate-200">{st}</span>
+                  {i < all.length - 1 && <span class="font-mono text-xs">→</span>}
+                </>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
+    </div>
+  </section>
+
+  <!-- Timeline -->
+  <section class="py-20">
+    <div class={wrap}>
+      <p class={eyebrow}>From event to email</p>
+      <h2 class="mt-3 max-w-2xl text-3xl font-bold tracking-tight">What happens after someone shows up</h2>
+      <ol class="mt-12 ml-4 space-y-10 border-l border-slate-200 pl-10 dark:border-slate-800">
+        {timeline.map((t) => (
+          <li class="relative">
+            <span class="absolute -left-[3.75rem] top-0 flex size-9 items-center justify-center rounded-full border border-slate-200 bg-white text-indigo-600 dark:border-slate-700 dark:bg-slate-900 dark:text-indigo-400" set:html={t.icon} />
+            <div class="flex flex-wrap items-center gap-3">
+              <h3 class="font-semibold">{t.title}</h3>
+              <span class="rounded-md border border-slate-200 bg-slate-50 px-2 py-1 font-mono text-xs dark:border-slate-700 dark:bg-slate-800 text-slate-500">{t.tag}</span>
+            </div>
+            <p class="mt-1 max-w-xl text-sm text-slate-600 dark:text-slate-400">{t.text}</p>
+          </li>
+        ))}
+      </ol>
     </div>
   </section>
 
@@ -162,15 +215,19 @@ const primary =
         </div>
         <a href="/use-cases/" class="text-sm font-medium text-indigo-600 hover:underline dark:text-indigo-400">All use cases →</a>
       </div>
-      <div class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <ul class="mt-10 grid gap-x-12 border-b border-slate-200 sm:grid-cols-2 dark:border-slate-800">
         {useCases.map((u) => (
-          <a href={`/use-cases/#${u.slug}`} class={`${card} group block`}>
-            <div class={`${tile} ${u.tone}`} set:html={u.icon} />
-            <h3 class="mt-4 font-semibold">{u.name} <span class="text-slate-400 transition group-hover:translate-x-0.5">→</span></h3>
-            <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">{u.text}</p>
-          </a>
+          <li class="border-t border-slate-200 dark:border-slate-800">
+            <a href={`/use-cases/#${u.slug}`} class="group flex items-start gap-4 py-5">
+              <span class="mt-0.5 text-indigo-600 dark:text-indigo-400" set:html={u.icon} />
+              <span>
+                <span class="block font-semibold">{u.name} <span class="text-slate-400 transition group-hover:translate-x-0.5">→</span></span>
+                <span class="mt-1 block text-sm text-slate-600 dark:text-slate-400">{u.text}</span>
+              </span>
+            </a>
+          </li>
         ))}
-      </div>
+      </ul>
     </div>
   </section>
 
@@ -207,9 +264,9 @@ const primary =
             <p class="mt-1 text-slate-400">Draft saved. Review and send it in the app.</p>
           </div>
         </div>
-        <div class="grid content-start gap-3">
+        <div class="grid content-start divide-y divide-white/10 border-y border-white/10">
           {agentTools.map((t) => (
-            <div class="flex items-center justify-between gap-4 rounded-lg border border-white/10 bg-white/5 px-4 py-3 backdrop-blur">
+            <div class="flex items-center justify-between gap-4 py-3">
               <code class="flex items-center gap-2 font-mono text-sm font-semibold"><span class={`size-2 rounded-full ${t.dot}`}></span>{t.name}</code>
               <span class="text-right text-sm text-slate-300">{t.text}</span>
             </div>
@@ -221,11 +278,11 @@ const primary =
         for a welcome automation, a win-back broadcast and list hygiene are built in.
         <a href="/docs/guide/mcp" class="font-medium text-indigo-300 underline">Read the MCP guide →</a>
       </p>
-      <div class="mt-10 grid gap-4 sm:grid-cols-3">
+      <div class="mt-10 grid gap-8 border-t border-white/10 pt-8 sm:grid-cols-3">
         {safety.map((s) => (
-          <div class="rounded-xl border border-white/10 bg-white/5 p-5 backdrop-blur">
-            <div class={`${tile} bg-indigo-500/20 text-indigo-300`} set:html={s.icon} />
-            <h3 class="mt-4 font-semibold">{s.name}</h3>
+          <div>
+            <span class="text-indigo-300" set:html={s.icon} />
+            <h3 class="mt-3 font-semibold">{s.name}</h3>
             <p class="mt-2 text-sm text-slate-300">{s.text}</p>
           </div>
         ))}
@@ -238,15 +295,30 @@ const primary =
     <div class={wrap}>
       <p class={eyebrow}>For humans and agents</p>
       <h2 class="mt-3 max-w-2xl text-3xl font-bold tracking-tight">Use it from the app, your code or an agent</h2>
-      <div class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div class="mt-10 grid divide-y divide-slate-200 border-y border-slate-200 sm:grid-cols-2 sm:divide-y-0 lg:grid-cols-4 lg:divide-x dark:divide-slate-800 dark:border-slate-800">
         {access.map((a) => (
-          <a href={a.href} class={`${card} group block`}>
-            <div class={`${tile} ${a.tone}`} set:html={a.icon} />
-            <h3 class="mt-4 font-semibold">{a.name} <span class="text-slate-400 transition group-hover:translate-x-0.5">→</span></h3>
-            <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">{a.text}</p>
+          <a href={a.href} class="group block p-5 hover:bg-slate-50 dark:hover:bg-slate-900/50">
+            <span class="text-indigo-600 dark:text-indigo-400" set:html={a.icon} />
+            <h3 class="mt-3 font-semibold">{a.name} <span class="text-slate-400 transition group-hover:translate-x-0.5">→</span></h3>
+            <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">{a.text}</p>
           </a>
         ))}
       </div>
+    </div>
+  </section>
+
+  <!-- Works with -->
+  <section class="pb-20">
+    <div class={wrap}>
+      <p class="text-center text-sm text-slate-500">
+        Send through SMTP or SES, get bounce callbacks from SES, Postmark and Mailgun, export to ClickHouse, connect agents over MCP.
+        <a href="/integrations/" class="font-medium text-indigo-600 hover:underline dark:text-indigo-400">All integrations →</a>
+      </p>
+      <ul class="mt-6 flex flex-wrap justify-center gap-2">
+        {works.map((w) => (
+          <li class="rounded-full border border-slate-200 bg-white px-4 py-1.5 font-mono text-sm text-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">{w}</li>
+        ))}
+      </ul>
     </div>
   </section>
 
