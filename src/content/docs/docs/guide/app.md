@@ -45,7 +45,8 @@ Sphericon's own delivery events. Filter by action and open an event to see its p
 email (CAN-SPAM requires one).
 
 **Team and security.** Members and their roles, pending invitations, the requirement that every
-member uses two-factor authentication, and the audit log of changes (an Enterprise feature, with a
+member uses two-factor authentication (a sign-in with a Passkey meets it, a password sign-in needs an
+authenticator app), and the audit log of changes (an Enterprise feature, with a
 configurable retention).
 
 **Tracking.** The snippet to paste into the `<head>` of your site, a way to send a test event from
