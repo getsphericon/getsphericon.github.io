@@ -1,1 +1,4 @@
 @import "tailwindcss";
+
+/* The theme is a class on <html>, set from the stored choice or the system (see Header). */
+@custom-variant dark (&:where(.dark, .dark *));

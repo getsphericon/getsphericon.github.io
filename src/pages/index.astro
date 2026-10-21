@@ -12,10 +12,10 @@ const model = [
 ]
 
 const flow = [
-  { n: 'Contact', c: 'from-indigo-500 to-indigo-600' },
-  { n: 'Event', c: 'from-amber-400 to-amber-500' },
-  { n: 'Segment', c: 'from-emerald-500 to-emerald-600' },
-  { n: 'Send', c: 'from-sky-500 to-sky-600' },
+  { n: 'Contact', c: 'border border-slate-200 bg-white text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-white' },
+  { n: 'Event', c: 'border border-slate-200 bg-white text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-white' },
+  { n: 'Segment', c: 'border border-slate-200 bg-white text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-white' },
+  { n: 'Send', c: 'border border-slate-200 bg-white text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-white' },
 ]
 
 const surfaces = [
@@ -33,10 +33,10 @@ const access = [
 
 const agentTools = [
   { name: 'contacts_*', dot: 'bg-indigo-400', text: 'Read and upsert contacts, tags and events' },
-  { name: 'segments_*', dot: 'bg-emerald-400', text: 'Build segments and preview who matches' },
-  { name: 'broadcasts_*', dot: 'bg-sky-400', text: 'Draft broadcasts, send tests, read reports' },
-  { name: 'automations_*', dot: 'bg-violet-400', text: 'Author automations, dry-run their steps' },
-  { name: 'email_lint', dot: 'bg-amber-400', text: 'Check a message before it is saved' },
+  { name: 'segments_*', dot: 'bg-indigo-400', text: 'Build segments and preview who matches' },
+  { name: 'broadcasts_*', dot: 'bg-indigo-400', text: 'Draft broadcasts, send tests, read reports' },
+  { name: 'automations_*', dot: 'bg-indigo-400', text: 'Author automations, dry-run their steps' },
+  { name: 'email_lint', dot: 'bg-indigo-400', text: 'Check a message before it is saved' },
 ]
 
 const safety = [
@@ -63,9 +63,7 @@ const primary =
   <!-- Hero -->
   <section class="relative overflow-hidden border-b border-slate-200 dark:border-slate-800">
     <div class="pointer-events-none absolute inset-0 -z-10">
-      <div class="absolute -top-32 left-1/4 size-[28rem] rounded-full bg-indigo-500/25 blur-3xl"></div>
-      <div class="absolute -top-20 right-1/4 size-[26rem] rounded-full bg-violet-500/25 blur-3xl"></div>
-      <div class="absolute top-40 left-1/2 size-[22rem] -translate-x-1/2 rounded-full bg-sky-400/20 blur-3xl"></div>
+      <div class="absolute -top-32 left-1/4 size-[28rem] rounded-full bg-indigo-500/10 blur-3xl"></div>
       <div class="absolute inset-0 opacity-50 [background-image:radial-gradient(circle,#94a3b8_1px,transparent_1px)] [background-size:24px_24px] [mask-image:linear-gradient(to_bottom,black,transparent_70%)]"></div>
     </div>
     <div class={`${wrap} pb-20 pt-16 text-center`}>
@@ -76,14 +74,14 @@ const primary =
         <span class="size-1.5 animate-pulse rounded-full bg-emerald-500"></span> Open source · AI-first · MCP server built in
       </a>
       <h1 class="mx-auto mt-6 max-w-3xl text-4xl font-bold tracking-tight sm:text-6xl">
-        <span class="bg-gradient-to-r from-indigo-600 via-violet-600 to-sky-500 bg-clip-text text-transparent">AI-first</span>{' '}
+        <span class="text-indigo-600 dark:text-indigo-400">AI-first</span>{' '}
         marketing automation you can own
       </h1>
       <ul class="mx-auto mt-8 flex max-w-2xl flex-wrap justify-center gap-2 text-sm font-medium">
-        <li class="flex items-center gap-2 rounded-full bg-violet-100 px-3.5 py-1.5 text-violet-700 dark:bg-violet-500/15 dark:text-violet-300"><span class="[&>svg]:size-4" set:html={icons.bot} />MCP-native</li>
-        <li class="flex items-center gap-2 rounded-full bg-sky-100 px-3.5 py-1.5 text-sky-700 dark:bg-sky-500/15 dark:text-sky-300"><span class="[&>svg]:size-4" set:html={icons.code} />On-premise</li>
-        <li class="flex items-center gap-2 rounded-full bg-emerald-100 px-3.5 py-1.5 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300"><span class="[&>svg]:size-4" set:html={icons.lock} />You own your data</li>
-        <li class="flex items-center gap-2 rounded-full bg-amber-100 px-3.5 py-1.5 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300"><span class="[&>svg]:size-4" set:html={icons.zap} />SaaS</li>
+        <li class="flex items-center gap-2 rounded-full px-3.5 py-1.5 border border-slate-200 bg-white/70 text-slate-700 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-300"><span class="text-indigo-600 dark:text-indigo-400 [&>svg]:size-4" set:html={icons.bot} />MCP-native</li>
+        <li class="flex items-center gap-2 rounded-full px-3.5 py-1.5 border border-slate-200 bg-white/70 text-slate-700 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-300"><span class="text-indigo-600 dark:text-indigo-400 [&>svg]:size-4" set:html={icons.code} />On-premise</li>
+        <li class="flex items-center gap-2 rounded-full px-3.5 py-1.5 border border-slate-200 bg-white/70 text-slate-700 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-300"><span class="text-indigo-600 dark:text-indigo-400 [&>svg]:size-4" set:html={icons.lock} />You own your data</li>
+        <li class="flex items-center gap-2 rounded-full px-3.5 py-1.5 border border-slate-200 bg-white/70 text-slate-700 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-300"><span class="text-indigo-600 dark:text-indigo-400 [&>svg]:size-4" set:html={icons.zap} />SaaS</li>
       </ul>
       <div class="mt-8 flex flex-wrap justify-center gap-3">
         <a href={site.signupUrl} class={primary}>Get started</a>
@@ -92,7 +90,7 @@ const primary =
         </a>
       </div>
       <div class="relative mx-auto mt-14 max-w-4xl">
-        <div class="absolute -inset-4 -z-10 rounded-3xl bg-gradient-to-r from-indigo-500/30 via-violet-500/30 to-sky-500/30 blur-2xl"></div>
+        <div class="absolute -inset-4 -z-10 rounded-3xl bg-gradient-to-r from-indigo-500/10 to-indigo-500/10 blur-2xl"></div>
         <div class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900">
           <div class="flex items-center gap-1.5 border-b border-slate-200 px-4 py-2.5 dark:border-slate-700">
             <span class="size-2.5 rounded-full bg-rose-400"></span>
@@ -114,7 +112,7 @@ const primary =
       <div class="mt-10 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
         {flow.map((s, i) => (
           <>
-            <div class={`flex-1 rounded-lg bg-gradient-to-br ${s.c} px-4 py-3 text-center font-mono text-sm font-semibold text-white shadow-md`}>{s.n}</div>
+            <div class={`flex-1 rounded-lg ${s.c} px-4 py-3 text-center font-mono text-sm font-semibold shadow-sm`}>{s.n}</div>
             {i < flow.length - 1 && <span class="text-center font-mono text-slate-400">→</span>}
           </>
         ))}
@@ -135,7 +133,7 @@ const primary =
   </section>
 
   <!-- Surfaces -->
-  <section class="border-y border-slate-200 bg-gradient-to-b from-slate-50 to-indigo-50/60 py-20 dark:border-slate-800 dark:from-slate-950 dark:to-indigo-950/30">
+  <section class="border-y border-slate-200 bg-slate-50 py-20 dark:border-slate-800 dark:bg-slate-900/40">
     <div class={wrap}>
       <p class={eyebrow}>What you can send</p>
       <h2 class="mt-3 max-w-2xl text-3xl font-bold tracking-tight">Three surfaces, one set of rules</h2>
@@ -179,14 +177,14 @@ const primary =
   <!-- AI-first / MCP -->
   <section class="relative overflow-hidden bg-slate-950 py-20 text-white">
     <div class="pointer-events-none absolute inset-0">
-      <div class="absolute -left-24 top-0 size-[26rem] rounded-full bg-violet-600/30 blur-3xl"></div>
-      <div class="absolute -right-24 bottom-0 size-[26rem] rounded-full bg-indigo-600/30 blur-3xl"></div>
+      <div class="absolute -left-24 top-0 size-[26rem] rounded-full bg-indigo-600/15 blur-3xl"></div>
+      <div class="absolute -right-24 bottom-0 size-[26rem] rounded-full bg-indigo-600/10 blur-3xl"></div>
     </div>
     <div class={`${wrap} relative`}>
-      <p class="font-mono text-xs font-semibold uppercase tracking-widest text-violet-300">AI-first</p>
+      <p class="font-mono text-xs font-semibold uppercase tracking-widest text-indigo-300">AI-first</p>
       <h2 class="mt-3 max-w-2xl text-3xl font-bold tracking-tight">Your agent can run the workspace</h2>
       <p class="mt-3 max-w-2xl text-slate-300">
-        Sphericon serves a Model Context Protocol endpoint at <code class="font-mono text-sm text-violet-300">/mcp</code>, the same
+        Sphericon serves a Model Context Protocol endpoint at <code class="font-mono text-sm text-indigo-300">/mcp</code>, the same
         binary and data as the API. The tools are projected from the API contract, not written by hand,
         so an agent never lags behind the product.
       </p>
@@ -200,12 +198,12 @@ const primary =
           </div>
           <div class="p-5 font-mono text-xs leading-relaxed text-slate-200">
             <p class="text-slate-500"># Connect Claude Code</p>
-            <p class="mt-2 whitespace-pre-wrap break-all"><span class="text-violet-300">claude mcp add</span> --transport http sphericon \
+            <p class="mt-2 whitespace-pre-wrap break-all"><span class="text-indigo-300">claude mcp add</span> --transport http sphericon \
   https://your-sphericon/mcp \
   --header "Authorization: Bearer $SPHERICON_TOKEN"</p>
             <p class="mt-5 text-slate-500"># Then ask</p>
             <p class="mt-2 text-emerald-400">&gt; Draft a win-back broadcast for contacts who went quiet.</p>
-            <p class="mt-1 text-sky-300">segments_preview → broadcasts_create → email_lint</p>
+            <p class="mt-1 text-indigo-300">segments_preview → broadcasts_create → email_lint</p>
             <p class="mt-1 text-slate-400">Draft saved. Review and send it in the app.</p>
           </div>
         </div>
@@ -221,12 +219,12 @@ const primary =
       <p class="mt-6 text-sm text-slate-300">
         Clients that sign in, such as claude.ai custom connectors, connect over OAuth 2.1. Playbooks
         for a welcome automation, a win-back broadcast and list hygiene are built in.
-        <a href="/docs/guide/mcp" class="font-medium text-violet-300 underline">Read the MCP guide →</a>
+        <a href="/docs/guide/mcp" class="font-medium text-indigo-300 underline">Read the MCP guide →</a>
       </p>
       <div class="mt-10 grid gap-4 sm:grid-cols-3">
         {safety.map((s) => (
           <div class="rounded-xl border border-white/10 bg-white/5 p-5 backdrop-blur">
-            <div class={`${tile} bg-violet-500/20 text-violet-300`} set:html={s.icon} />
+            <div class={`${tile} bg-indigo-500/20 text-indigo-300`} set:html={s.icon} />
             <h3 class="mt-4 font-semibold">{s.name}</h3>
             <p class="mt-2 text-sm text-slate-300">{s.text}</p>
           </div>
@@ -254,7 +252,7 @@ const primary =
 
   <!-- CTA -->
   <section class="px-4 sm:px-6">
-    <div class="relative mx-auto max-w-5xl overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-600 via-violet-600 to-sky-500 px-6 py-16 text-center text-white shadow-xl">
+    <div class="relative mx-auto max-w-5xl overflow-hidden rounded-2xl bg-indigo-600 px-6 py-16 text-center text-white shadow-xl">
       <div class="pointer-events-none absolute -right-16 -top-16 size-64 rounded-full bg-white/10 blur-2xl"></div>
       <h2 class="relative text-3xl font-bold tracking-tight">Start sending in minutes</h2>
       <p class="relative mx-auto mt-3 max-w-xl text-indigo-100">
