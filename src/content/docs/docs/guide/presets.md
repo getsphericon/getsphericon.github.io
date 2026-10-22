@@ -3,8 +3,8 @@ title: "Presets"
 ---
 
 A **Preset** describes one provider's inbound callbacks: how a request is proven to come from that
-provider, and how its payload becomes **Delivery failures** (a hard bounce or a spam complaint for
-one address). Sphericon ships Presets for `generic`, `ses`, `postmark` and `mailgun`. On
+provider, and how its payload becomes **Delivery notices** (a bounce, a spam complaint, a delivery, a delay or a
+drop for one address). Sphericon ships Presets for `generic`, `ses`, `postmark` and `mailgun`. On
 a self-hosted Instance you can add your own for a provider the project has no Preset for.
 
 Only the Instance operator supplies Presets: a Workspace never does, and the API accepts none. A
@@ -41,7 +41,7 @@ sphericon preset test ./acme-relay.yaml --payload ./sample.json \
 ```
 
 Without `--payload` it prints `PASS` or `FAIL` for each case in `tests` and exits non-zero if any
-failed. With `--payload` it prints the Delivery failures the sample yields, or the reason it was
+failed. With `--payload` it prints the Delivery notices the sample yields, or the reason it was
 refused. `--header name=value` and `--param name=value` repeat; `--now` sets the clock (an RFC 3339
 time) for a signature with a timestamp tolerance.
 
@@ -72,8 +72,8 @@ tests: …
 | `description` | Optional one line.                                                                                                    |
 | `params`      | A JSON Schema (draft 2020-12) of what the Owner enters on the Integration. A secret is a string marked `writeOnly`.   |
 | `verify`      | How the request is proven authentic: one kind from the closed set below.                                              |
-| `transform`   | A [gojq](https://github.com/itchyny/gojq) program. Input `{body, headers}`; output an array of Delivery failures.     |
-| `tests`       | At least one case: `request` (`headers`, `body`), `params`, optional `now`, and the expected `failures` or `refused`. |
+| `transform`   | A [gojq](https://github.com/itchyny/gojq) program. Input `{body, headers}`; output an array of Delivery notices.      |
+| `tests`       | At least one case: `request` (`headers`, `body`), `params`, optional `now`, and the expected `notices` or `refused`.   |
 
 ### `verify`
 
@@ -94,14 +94,28 @@ Each kind names the `params` property that holds its secret.
 ### `transform`
 
 A pure function with a fixed output: no environment, no `input`, no modules, and no `debug`, `stderr`, `now` or `input_filename` (a Preset that calls one is refused at load). Each element it returns is
-`{id, destination, kind, permanent, sending_domain?}`:
+`{id, destination, kind, permanent?, sending_domain?, message_id?, reason?}`:
 
 - `id`: the provider's event id; with the destination it dedupes a redelivery.
 - `destination`: the address (trimmed and lower-cased by Sphericon).
-- `kind`: `bounce` or `complaint`.
+- `kind`: one of `bounce`, `complaint`, `delivery`, `delay` or `drop`. A `delivery` means the
+  receiving server accepted the message, a `delay` that the provider is still retrying, a `drop`
+  that the provider never attempted or gave up on the send.
 - `permanent`: for a bounce, whether it is hard. Only permanent bounces and complaints enter
-  Suppression; a soft bounce still counts in the deliverability rates.
+  Suppression; a soft bounce, a delivery, a delay and a drop never suppress.
 - `sending_domain`: optional, the domain the message was sent from.
+- `message_id`: optional, the provider's id of the message. Sphericon matches it to the
+  message it sent (the SES message id, or for SMTP the `Message-ID` header it set), so the notice
+  is linked to that Broadcast or Automation email and stamps its delivery result. Without it, or
+  without a match, the notice stays at the level of the address.
+- `reason`: optional, a short provider explanation of a bounce, delay or drop; at most 500
+  characters.
+
+A notice becomes an `email.delivered`, `email.delayed`, `email.dropped`, `email.bounced` or
+`email.complained` Event. The first notice of each of delivered, bounced and complained also stamps
+the message once, and reports read those stamps, so a repeated or redelivered notice changes nothing.
+The Complaint rate is computed over delivered mail, so a Preset that never returns `delivery`
+leaves it undefined for that Workspace.
 
 Sphericon validates what the program returns and never trusts its shape. A run stops at a timeout
 (100 ms), and the body, the program (16 KiB) and the number of results (100) are limited. Return an empty
