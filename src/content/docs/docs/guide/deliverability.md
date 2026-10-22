@@ -98,8 +98,10 @@ automation.
 
 Bounces and complaints reach the suppression list only through an Integration's **hook**: the
 provider posts a callback to the Integration's hook URL, and a **Preset** verifies the request and
-turns it into a hard bounce or a spam complaint for one address. Only permanent bounces and
-complaints suppress an address; a soft bounce still counts in the deliverability rates. The design is
+turns it into a **Delivery notice** for one address: a bounce, a spam complaint, a delivery, a delay
+or a drop. Only permanent bounces and complaints suppress an address; a soft bounce still counts in
+the deliverability rates, and a delivery, delay or drop never suppresses. The Complaint rate is
+complaints over delivered mail, so it needs a provider that reports deliveries. The design is
 recorded in
 [ADR 0037](https://github.com/getsphericon/sphericon/blob/main/docs/adr/0037-inbound-provider-callbacks-are-presets-on-an-integration.md).
 
@@ -121,7 +123,7 @@ sending domain; read them from `GET /api/sending-domains/rates`.
 
 Also for SES-compatible services that publish to SNS.
 
-1. In SES, publish bounce and complaint notifications to one SNS topic.
+1. In SES, publish bounce, complaint, delivery, delay and reject notifications to one SNS topic.
 2. Subscribe an HTTPS endpoint on that topic with the Integration's hook URL. Sphericon confirms the
    subscription itself once the request is verified.
 3. On the Integration, choose the `ses` Preset and set `topic_arn` to that topic's ARN. A signed
@@ -135,27 +137,33 @@ Postmark does not sign webhooks; the Preset checks HTTP basic auth.
    name and password you pick).
 2. In Postmark, for each message stream add a webhook with the URL
    `https://user:secret@host/hooks/key` (the hook URL with the user and password in front of the
-   host), enabling the **Bounce** and **Spam complaint** triggers.
+   host), enabling the **Delivery**, **Bounce** and **Spam complaint** triggers.
 
-Hard bounces and bad addresses are permanent; soft, transient and blocked bounces are not and never
-suppress. Other record types are ignored.
+Hard bounces and bad addresses are permanent; soft, blocked and unclassified bounces are not and
+never suppress. A `Transient` bounce is a delay. Postmark has no webhook for a rejected send, so this
+Preset reports no drop. Postmark reports its own message id, which links a notice to the message only
+when that is the id recorded for the send; for mail sent over SMTP a notice usually stays at the
+address. Other record types are ignored.
 
 ### Mailgun (`mailgun`)
 
 1. In Mailgun, copy the account-wide **HTTP webhook signing key** (Settings, API Security; it is not
    an API key).
 2. On the Integration, choose the `mailgun` Preset and set `signing_key`.
-3. In Mailgun, add the hook URL as the webhook for the **permanent failure**, **temporary failure**
-   and **spam complaint** events (`failed` and `complained`).
+3. In Mailgun, add the hook URL as the webhook for the **delivered**, **permanent failure**,
+   **temporary failure**, **rejected** and **spam complaint** events.
 
-A `failed` event with severity `permanent` is a permanent bounce; every other event is ignored.
+`delivered` is a delivery and `complained` a complaint. A `failed` event with severity `permanent`
+is a permanent bounce, unless the reason names a suppression list, which is a drop; severity
+`temporary` is a delay; `rejected` is a drop. Every other event is ignored.
 
 ### Any other sender (`generic`)
 
 For a source that can post JSON and sign it with
 [Standard Webhooks](https://www.standardwebhooks.com/). Set `secret` to the `whsec_` signing secret.
-The body is one failure or an array of them, each `{id, destination, kind, permanent, sending_domain?}`
-with `kind` `bounce` or `complaint`.
+The body is one Delivery notice or an array of them, each
+`{id, destination, kind, permanent?, sending_domain?, message_id?, reason?}` with `kind` one of
+`bounce`, `complaint`, `delivery`, `delay` or `drop`.
 
 ### A provider with no Preset
 
