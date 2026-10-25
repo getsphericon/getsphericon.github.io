@@ -66,7 +66,7 @@ registration and PKCE (S256 only).
 | Segments            | `segments_*`, `segments_preview`                                                       |
 | Templates           | `templates_*`                                                                          |
 | Writing mail        | `brand_get`, `email_schema`, `email_lint`                                              |
-| Broadcasts          | `broadcasts_*`, `broadcasts_set_audience`, `broadcasts_test_send`, `broadcasts_report` |
+| Broadcasts          | `broadcasts_*`, `broadcasts_set_segment`, `broadcasts_test_send`, `broadcasts_report` |
 | Automations         | `automations_*`, `automations_deactivate`, `automations_dry_run_http_step`             |
 | Enrollments         | `enrollments_list`, `enrollments_get`                                                  |
 | Reference and rates | `custom_fields_list`, `sending_domains_list`, `sending_domains_rates`                  |

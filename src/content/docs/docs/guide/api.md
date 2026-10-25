@@ -43,7 +43,7 @@ Sending, activating and erasing have their own scopes, so a token that can edit 
 | Events              | `/events`, `/events/batch`, `/events/actions`                        |
 | Segments            | `/segments`, `/segments/preview`                                     |
 | Templates           | `/templates`                                                         |
-| Broadcasts          | `/broadcasts`, `…/audience`, `…/schedule`, `…/test-send`, `…/report` |
+| Broadcasts          | `/broadcasts`, `…/segment`, `…/schedule`, `…/test-send`, `…/report` |
 | Automations         | `/automations`, `…/activate`, `…/deactivate`                         |
 | Enrollments         | `/automations/{id}/enrollments`                                      |
 | Transactional       | `/emails`                                                            |
