@@ -5,5 +5,6 @@ export const site = {
   loginUrl: 'https://sphericon.app/login',
   docsUrl: '/docs/',
   supportEmail: 'support@getsphericon.com',
+  statusUrl: 'https://sphericon.openstatus.dev',
   githubUrl: 'https://github.com/getsphericon',
 }
