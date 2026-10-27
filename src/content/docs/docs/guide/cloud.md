@@ -20,8 +20,8 @@ product you can [self-host](/docs/self-hosting), so everything in this guide app
 | Running it   | You run the binary or image and PostgreSQL          | Run for you            |
 | Upgrades     | You apply them ([Upgrading](/docs/operations/upgrading)) | Applied for you        |
 | Backups      | You schedule and test them                          | Handled for you        |
-| API host     | Your own origin                                     | `api.getsphericon.app` |
-| Tracker host | Your own origin                                     | `t.getsphericon.app`   |
-| MCP host     | Your own origin ([MCP for agents](/docs/guide/mcp))      | `mcp.getsphericon.app` |
+| API host     | Your own origin                                     | `api.sphericon.app`    |
+| Tracker host | Your own origin                                     | `t.sphericon.app`      |
+| MCP endpoint | Your own origin ([MCP for agents](/docs/guide/mcp))      | `sphericon.app/mcp`    |
 
-[Create a workspace on Sphericon Cloud](https://getsphericon.app) or keep reading to run it yourself.
+[Create a workspace on Sphericon Cloud](https://sphericon.app) or keep reading to run it yourself.
