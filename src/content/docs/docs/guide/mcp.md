@@ -53,8 +53,13 @@ registration and PKCE (S256 only).
   the connector renews it with a rotating refresh token (30 days, single use; replaying a used one
   revokes the connector). The row stays the same in the workspace settings; revoke it there like
   any other token and both tokens stop working.
-- The consent screen lets you opt in to the send-class scopes. Token management scopes
-  (`tokens:*`) can never be granted to a connector.
+- The consent screen has two separate boxes. **Also allow sending** adds the send-class scopes.
+  **Also allow changing sending setup** adds `sending_domains:write` and `integrations:write`, so
+  the connector can add and verify a Sending domain and manage Integrations. Neither is ticked by
+  default, and ticking one does not grant the other. Token management scopes (`tokens:*`), erasing
+  contacts, the audit log, exports and captured messages can never be granted to a connector.
+- A connection keeps the scopes it was approved with. To add the setup scopes to an existing
+  connector, disconnect it, connect it again and tick the box.
 
 ## What an agent can do
 
@@ -70,6 +75,7 @@ registration and PKCE (S256 only).
 | Automations         | `automations_*`, `automations_deactivate`, `automations_dry_run_http_step`             |
 | Enrollments         | `enrollments_list`, `enrollments_get`                                                  |
 | Reference and rates | `custom_fields_list`, `sending_domains_list`, `sending_domains_rates`                  |
+| Sending setup       | `sending_domains_create`, `sending_domains_get`, `sending_domains_verify`, `integrations_*` |
 | Consent             | `unsubscribes_create`, `suppressions_create`                                           |
 | Webhooks            | `webhooks_*`, `webhooks_regenerate_secret`, `webhooks_test`                            |
 
@@ -103,7 +109,7 @@ writes it as `doc` to `templates_create`, `broadcasts_create` or an email step o
 an invalid one with the reason (`422`); nothing is repaired or stored. A message sent only as a
 `body` is stored as HTML with no document. Writing a `body` and a `doc` together is a `422`.
 
-## Playbooks
+## Prompts
 
 The server also publishes MCP prompts that walk an agent through common jobs, always leaving the
 final send to a human:
@@ -111,3 +117,30 @@ final send to a human:
 - **welcome**: draft a welcome automation for new contacts.
 - **win-back**: draft a broadcast for contacts who went quiet.
 - **list-hygiene**: audit audience health and propose cleanup.
+- **set-up-sending-domain**: add a Sending domain, publish its DNS records, verify it and report
+  what is still missing.
+
+## Let an agent set up your sending domain
+
+The **set-up-sending-domain** prompt takes an agent from "I want to send from `mail.example.com`"
+to a verified domain. The agent adds the domain, reads its DKIM, SPF, DMARC and tracking records,
+publishes them, triggers the check and reports back. A DNS change takes minutes to hours to be
+seen, so a failed check right after publishing is expected; the agent says so and checks again
+later instead of looping.
+
+It needs two things next to Sphericon:
+
+1. **Write access to Sending domains.** With an API token, give it `sending_domains:write`. With an
+   OAuth connector, tick **Also allow changing sending setup** on the consent screen.
+2. **A way to change your DNS.** Sphericon never touches your DNS. Connect your DNS provider to the
+   same agent, for example through its MCP server or CLI. Any provider works. Without one, the
+   agent stops with the records as a table (host, type, value) for you to publish by hand, then
+   verifies once you tell it they are in.
+
+In the app, **Settings → Emails** shows the same records for a domain, with a **Copy prompt for
+agent** button that puts the records and the steps on the clipboard so you can paste them into any
+agent, with or without MCP.
+
+The agent changes only the domain you named and only the records Sphericon lists. It creates
+missing records, leaves existing ones alone and deletes nothing. If an SPF or DMARC record already
+exists at that host, it does not overwrite it and asks you to merge the values.
