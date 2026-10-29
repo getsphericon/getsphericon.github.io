@@ -1,0 +1,64 @@
+---
+// The mark as an ASCII animation, played back from frames rendered at build time by
+// scripts/logo-frames.ts. The first frame is the logo itself, so it doubles as the still image
+// without JavaScript and for visitors who prefer reduced motion.
+import frames from '../generated/logo-frames.json'
+
+interface Props {
+  class?: string
+}
+
+const { class: className = '' } = Astro.props
+---
+
+<pre
+  data-logo-animation
+  aria-hidden="true"
+  class:list={[
+    // The logo's gradient, painted through the glyphs; the orbit and contact are drawn over it.
+    'select-none bg-linear-to-br from-indigo-400 to-indigo-700 bg-clip-text font-mono text-[7px] leading-[1.2] text-transparent sm:text-[9px] lg:text-[10px] [&_b]:font-bold [&_b]:text-slate-900 [&_i]:not-italic [&_i]:text-slate-900/40 dark:[&_b]:text-white dark:[&_i]:text-white/40',
+    className,
+  ]}
+  set:html={frames[0]}
+/>
+
+<script>
+  import frames from '../generated/logo-frames.json'
+
+  const FPS = 24
+  const pre = document.querySelector<HTMLElement>('[data-logo-animation]')
+  const still = matchMedia('(prefers-reduced-motion: reduce)')
+
+  if (pre) {
+    let visible = true
+    let shown = 0
+    let start = 0
+    let request = 0
+
+    const tick = (now: number) => {
+      start ||= now - (shown * 1000) / FPS
+      const frame = Math.floor(((now - start) * FPS) / 1000) % frames.length
+      if (frame !== shown) {
+        pre.innerHTML = frames[frame]
+        shown = frame
+      }
+      request = requestAnimationFrame(tick)
+    }
+
+    const update = () => {
+      cancelAnimationFrame(request)
+      start = 0
+      if (visible && !still.matches && !document.hidden) request = requestAnimationFrame(tick)
+    }
+
+    new IntersectionObserver(([entry]) => {
+      visible = entry.isIntersecting
+      update()
+    }).observe(pre)
+    document.addEventListener('visibilitychange', update)
+    still.addEventListener('change', () => {
+      if (still.matches) pre.innerHTML = frames[(shown = 0)]
+      update()
+    })
+  }
+</script>
