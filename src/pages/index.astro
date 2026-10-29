@@ -1,5 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro'
+import LogoAnimation from '../components/LogoAnimation.astro'
 import { site } from '../site'
 import { icons, tone, card, tile } from '../ui'
 import { useCases } from '../useCases'
@@ -71,27 +72,32 @@ const primary =
       <div class="absolute inset-0 opacity-50 [background-image:radial-gradient(circle,#94a3b8_1px,transparent_1px)] [background-size:24px_24px] [mask-image:linear-gradient(to_bottom,black,transparent_70%)]"></div>
     </div>
     <div class={`${wrap} pb-20 pt-16 text-center`}>
-      <a
-        href={site.githubUrl}
-        class="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-white/70 px-3 py-1 font-mono text-xs text-indigo-700 backdrop-blur hover:bg-white dark:border-indigo-500/30 dark:bg-slate-900/60 dark:text-indigo-300"
-      >
-        <span class="size-1.5 animate-pulse rounded-full bg-emerald-500"></span> Open source · AI-first · MCP server built in
-      </a>
-      <h1 class="mx-auto mt-6 max-w-3xl text-4xl font-bold tracking-tight sm:text-6xl">
-        <span class="text-indigo-600 dark:text-indigo-400">AI-first</span>{' '}
-        marketing automation you can own
-      </h1>
-      <ul class="mx-auto mt-8 flex max-w-2xl flex-wrap justify-center gap-2 text-sm font-medium">
-        <li class="flex items-center gap-2 rounded-full px-3.5 py-1.5 border border-slate-200 bg-white/70 text-slate-700 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-300"><span class="text-indigo-600 dark:text-indigo-400 [&>svg]:size-4" set:html={icons.bot} />MCP-native</li>
-        <li class="flex items-center gap-2 rounded-full px-3.5 py-1.5 border border-slate-200 bg-white/70 text-slate-700 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-300"><span class="text-indigo-600 dark:text-indigo-400 [&>svg]:size-4" set:html={icons.code} />On-premise</li>
-        <li class="flex items-center gap-2 rounded-full px-3.5 py-1.5 border border-slate-200 bg-white/70 text-slate-700 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-300"><span class="text-indigo-600 dark:text-indigo-400 [&>svg]:size-4" set:html={icons.lock} />You own your data</li>
-        <li class="flex items-center gap-2 rounded-full px-3.5 py-1.5 border border-slate-200 bg-white/70 text-slate-700 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-300"><span class="text-indigo-600 dark:text-indigo-400 [&>svg]:size-4" set:html={icons.zap} />SaaS</li>
-      </ul>
-      <div class="mt-8 flex flex-wrap justify-center gap-3">
-        <a href={site.signupUrl} class={primary}>Get started</a>
-        <a href={site.docsUrl} class="rounded-lg border border-slate-300 bg-white/70 px-5 py-2.5 font-medium backdrop-blur hover:bg-white dark:border-slate-700 dark:bg-slate-900/60 dark:hover:bg-slate-900">
-          Read the docs
-        </a>
+      <div class="flex flex-col items-center gap-12 lg:flex-row lg:justify-between lg:text-left">
+        <div>
+          <a
+            href={site.githubUrl}
+            class="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-white/70 px-3 py-1 font-mono text-xs text-indigo-700 backdrop-blur hover:bg-white dark:border-indigo-500/30 dark:bg-slate-900/60 dark:text-indigo-300"
+          >
+            <span class="size-1.5 animate-pulse rounded-full bg-emerald-500"></span> Open source · AI-first · MCP server built in
+          </a>
+          <h1 class="mx-auto mt-6 max-w-3xl text-4xl font-bold tracking-tight sm:text-6xl lg:mx-0">
+            <span class="text-indigo-600 dark:text-indigo-400">AI-first</span>{' '}
+            marketing automation you can own
+          </h1>
+          <ul class="mx-auto mt-8 flex max-w-2xl flex-wrap justify-center gap-2 text-sm font-medium lg:mx-0 lg:justify-start">
+            <li class="flex items-center gap-2 rounded-full px-3.5 py-1.5 border border-slate-200 bg-white/70 text-slate-700 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-300"><span class="text-indigo-600 dark:text-indigo-400 [&>svg]:size-4" set:html={icons.bot} />MCP-native</li>
+            <li class="flex items-center gap-2 rounded-full px-3.5 py-1.5 border border-slate-200 bg-white/70 text-slate-700 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-300"><span class="text-indigo-600 dark:text-indigo-400 [&>svg]:size-4" set:html={icons.code} />On-premise</li>
+            <li class="flex items-center gap-2 rounded-full px-3.5 py-1.5 border border-slate-200 bg-white/70 text-slate-700 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-300"><span class="text-indigo-600 dark:text-indigo-400 [&>svg]:size-4" set:html={icons.lock} />You own your data</li>
+            <li class="flex items-center gap-2 rounded-full px-3.5 py-1.5 border border-slate-200 bg-white/70 text-slate-700 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-300"><span class="text-indigo-600 dark:text-indigo-400 [&>svg]:size-4" set:html={icons.zap} />SaaS</li>
+          </ul>
+          <div class="mt-8 flex flex-wrap justify-center gap-3 lg:justify-start">
+            <a href={site.signupUrl} class={primary}>Get started</a>
+            <a href={site.docsUrl} class="rounded-lg border border-slate-300 bg-white/70 px-5 py-2.5 font-medium backdrop-blur hover:bg-white dark:border-slate-700 dark:bg-slate-900/60 dark:hover:bg-slate-900">
+              Read the docs
+            </a>
+          </div>
+        </div>
+        <LogoAnimation class="shrink-0" />
       </div>
       <div class="relative mx-auto mt-14 max-w-4xl">
         <div class="absolute -inset-4 -z-10 rounded-3xl bg-gradient-to-r from-indigo-500/10 to-indigo-500/10 blur-2xl"></div>

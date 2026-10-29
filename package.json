@@ -10,8 +10,8 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "predev": "node scripts/fetch-spec.ts",
-    "prebuild": "node scripts/fetch-spec.ts"
+    "predev": "node scripts/fetch-spec.ts && node scripts/logo-frames.ts",
+    "prebuild": "node scripts/fetch-spec.ts && node scripts/logo-frames.ts"
   },
   "dependencies": {
     "@astrojs/markdown-satteri": "^0.4.5",
