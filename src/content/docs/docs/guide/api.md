@@ -21,6 +21,8 @@ Create an API token under **Settings → Developers**. Each token carries scopes
 integration only what it needs, for example:
 
 - `contacts:read`, `contacts:write`, and the separate `contacts:erase` to delete (erase) a contact
+- `contacts:export` to export one contact's data (`POST /contacts/export`)
+- `suppressions:write` to add a suppression (`POST /suppressions`)
 - `events:write`
 - `segments:read`, `segments:write`
 - `broadcasts:write`, and the separate `broadcasts:send` to actually send
@@ -32,7 +34,7 @@ integration only what it needs, for example:
 - `sending_domains:read`, `sending_domains:write` for sending domains: create one, publish the returned DKIM record, then `POST /sending-domains/{id}/verify` and read the domain to see whether it verified (the DKIM private key is never returned)
 - `export:read` (Enterprise) for the Export streams, `GET /export/events` and the other streams, which read a Workspace's rows page by page into a warehouse; see the [Export streams guide](/docs/export-streams) for the cursor, the overlap and a ClickHouse example
 
-Sending, activating and erasing have their own scopes, so a token that can edit drafts cannot send mail and a token that can write contacts cannot erase them.
+Sending, activating, erasing, exporting and suppressing have their own scopes, so a token that can edit drafts cannot send mail and a token that can write contacts cannot erase, export or suppress them.
 
 ## What the external API covers
 
