@@ -13,10 +13,9 @@ contact: both actions are done by your own team. The design is recorded in
 Export produces one JSON file with everything held about a single contact. It is streamed as a
 download, so a contact with many events is fine.
 
-- **Site UI:** open the contact and choose **Export**. Any Workspace member who can read contacts
-  can do it.
+- **Site UI:** open the contact and choose **Export**. Owners and admins can do it.
 - **External API:** `POST /api/contacts/export?id=<id>` or `POST /api/contacts/export?email=<address>`
-  (exactly one of the two). The token needs the `contacts:read` scope. MCP exposes the same
+  (exactly one of the two). The token needs the `contacts:export` scope. MCP exposes the same
   operation.
 
 The file contains the contact (`contact`), its `tags`, `visitors`, all `events`, the `unsubscribes`,

@@ -58,6 +58,9 @@ registration and PKCE (S256 only).
   the connector can add and verify a Sending domain and manage Integrations. Neither is ticked by
   default, and ticking one does not grant the other. Token management scopes (`tokens:*`), erasing
   contacts, the audit log, exports and captured messages can never be granted to a connector.
+- Any workspace member can approve a connector, but only for what their role allows: the consent
+  screen offers only the scopes the member may grant (exporting contacts and suppressing addresses
+  need an owner or an admin), and a connector never does more than its member's current role.
 - A connection keeps the scopes it was approved with. To add the setup scopes to an existing
   connector, disconnect it, connect it again and tick the box.
 
