@@ -134,4 +134,38 @@ curl https://sphericon.example.com/api/events/batch \
 - Load the Contacts first: an event whose subject matches no Contact is stored anonymously and is
   not linked afterwards.
 
+## Orders and revenue
+
+Sphericon reports what your email earned from the orders your shop sends as events, in the shape
+of the [RudderStack E-Commerce Events spec](https://www.rudderstack.com/docs/event-spec/ecommerce-events-spec/ordering/):
+`Order Completed`, `Order Updated`, `Order Refunded` and `Order Cancelled`. Send them like any
+other event, from the tracker, `/collect` or the API. Sphericon reads `order_id`, `total`,
+`currency` and a refund's optional `refund_id`; every other property is kept as sent.
+
+```json
+{
+  "events": [
+    {
+      "action": "Order Completed",
+      "subjectId": "user_42",
+      "properties": { "order_id": "1001", "total": 27.5, "currency": "USD" }
+    }
+  ]
+}
+```
+
+- `Order Completed` must name its `currency`, an ISO 4217 code in capitals. An order event without
+  it, with an unknown code, or with a `total` that has more decimal places than the currency has
+  (two for USD, none for JPY) is refused with the reason in the response. `Order Updated`,
+  `Order Refunded` and `Order Cancelled` may leave `currency` out: they are in the currency of their
+  order.
+- `total` is a plain number with discounts applied. On `Order Refunded` it is the amount refunded:
+  send one event per refund, and give it a `refund_id` so a resent refund counts once.
+- The first `Order Completed` a workspace sends sets its **reporting currency**; an owner or admin
+  can choose another in the workspace **Settings**. Revenue is summed in that currency only: an
+  order in another currency is kept but counted in no sum, and no exchange rate is applied.
+- An order is credited to the broadcast or automation whose email the contact clicked last, within
+  the **attribution window** (5 days unless changed in **Settings**). Opens do not count.
+- Order history loads as a backfill, like any other event.
+
 See [API](/docs/guide/api) for tokens and the other endpoints.
