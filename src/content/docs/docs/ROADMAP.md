@@ -75,56 +75,16 @@ tracking.
 | 6         | Analytics + deliverability           | 🟡 In progress   | 1, 4       | Dashboards **✅** (workspace analytics overview). Suppression list **✅** (do-not-send registry, consulted in the send loop). Bounce/complaint **ingestion ✅** — inbound hooks at `/hooks/{key}` (ADR 0037: the key belongs to one Integration, which reads its callbacks with a Preset; SES is the `ses` Preset: signature-verified, topic-bound and subscription-confirming) normalizes into typed `EmailBounce`/`EmailComplaint` events → suppression (permanent bounces + complaints). Sending domains + native DKIM **✅** (ADR 0010). Still ⬜: outbound SES-compatible endpoint (extend nikoksr/notify), A/B, more provider adapters (Yandex/SendGrid/…). |
 | 7 (later) | E-commerce                           | ⬜               | 2, 4       | Shopify/Woo connectors, product catalog, purchase/cart events, revenue attribution. Enabled architecturally via the events model from Phase 1.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 
-> **Progress:** Phases 1–4 **and** the two accepted ADR refactors (0001 send-eligibility,
-> 0002 unified identity) are implemented, tested, and on `main`. Phase 2 added a
-> standalone, domain-agnostic rule engine (`internal/segments`) compiling the
-> react-querybuilder format to SQL; segment targeting + a deliverable-count preview
-> are wired into broadcasts. Phase 3 made email bodies **HTML-only** (Liquid merge
-> tags over email-ready HTML) with reusable templates and test-sends — one format, no dual editor.
-> Phase 4 shipped linear automations (trigger → email/wait steps) end-to-end, with
-> enrollment driven by an internal **domain-event bus** (`internal/events`, transactional
-> outbox over watermill-sql; see docs/design/domain-events.md) and a **visual xyflow
-> builder** (`@workflowbuilder/sdk`) that currently linearizes the graph (branches drawn
-> in the canvas are dropped with a warning). The transactional send surface [ADR 0005]
-> is live on `/api`. Send-eligibility (`internal/eligibility`) is consulted in the
-> broadcast, automation, and transactional paths; identity resolution + anonymous-event
-> stitching run at Collect ingest.
-> (Done since: events-bus P0–P2 + typed union + webhooks; legacy email/pubsub
-> retired with an inline jobs adapter; Phase 2 event-based segment conditions;
-> ADR 0001/0002 refactors; transactional send [ADR 0005]; visual automation builder;
-> multi-user workspaces [ADR 0004]; sending domains + native DKIM [ADR 0010]; complaint/bounce
-> rates [ADR 0011]; RFC 8058 one-click unsubscribe [ADR 0012]; double opt-in [ADR 0013];
-> one outbound-send chokepoint [ADR 0015]; MCP surface [ADR 0016]; generated scoped client
-> [ADR 0017]; tags; OAuth server; health/readiness probes, Prometheus metrics and OTel.)
-
-> **⚠️ Authoritative model — read `GLOSSARY.md` + `docs/adr/*` first.** This phased
-> roadmap predates the domain model in `GLOSSARY.md` and the accepted ADRs, which
-> supersede it where they disagree. Note in particular:
->
-> - **"Snapshot / static segments" is rejected**, not deferred. Per `GLOSSARY.md`
->   ("a segment is always a rule; membership is never materialized"; anti-vocabulary
->   rejects List/snapshot), there is no second segment kind. Mentions of snapshot
->   below are obsolete.
-> - The two ADR refactors that were once the near-term backlog — **ADR 0002**
->   (unified contact identity) and **ADR 0001** (send-eligibility) — are now **built
->   and wired** (see the ADR row in the table above). The event-segment conditions were
->   reworked to join by resolved `contact_id`, not email.
-
 ## Remaining backlog (the foundation is built)
 
 The core model is in place; the open work is feature breadth on top of it:
 
 - **Automation branching / goals / per-step conditions** — the visual builder exists but
-  linearizes; the schema + engine model only ordered send/wait steps. Now that the builder
-  is real, this is the natural next increment (GLOSSARY.md deferred it "until the sequence
-  builder is real").
+  linearizes; the schema + engine model only ordered send/wait steps.
 - **Anonymous-Contact promotion policy** — left open by ADR 0002: a Visitor resolves to a
   Contact only via Identify/API/import; whether/when an anonymous Visitor is promoted to a
   Contact row is undecided.
-- **Multi-user workspaces [ADR 0004]** — built: Membership + Role (owner / admin / member),
-  invitations, members UI, owner/admin-gated site handlers. Still open: the finer-grained
-  RBAC roles and SSO/SAML, which are EE (`ee/` holds only the license and README so far;
-  [ADR 0014]) and hang off this foundation.
+- **SSO/SAML** — EE ([ADR 0014]), on top of Membership.
 - **Phase 5 — Forms & onsite popups** — not started.
 - **Phase 6 remainder** — outbound SES-compatible send endpoint,
   A/B testing, more provider adapters (Yandex/SendGrid/…). See also **send-rate control &
@@ -206,178 +166,21 @@ current go-pkgz/auth email+password flow, which does neither natively.
 ### Self-hosting lifecycle — core, not EE
 
 Operating a self-hosted instance over time: knowing an update exists, applying it safely, and
-(optionally) telling us how the fleet uses the product. The release check and the telemetry
-report are **two channels with two switches** (ADR 0032): refusing telemetry must not hide a
-security release.
+(optionally) telling us how the fleet uses the product. The Release check and the Telemetry
+report are two channels (ADR 0032): refusing telemetry does not hide a security release.
 
-- **Release-update notification** (built) — the running instance checks for a newer published release
-  and surfaces an admin-only in-app banner ("vX.Y is available"). This is the solid MVP
-  deliverable. **Auto-update is a separate, hedged follow-up** and is deployment-specific:
-  reasonable for the single **binary** install, wrong for Docker/k8s (you roll a new image —
-  that's watchtower/the orchestrator's job, not ours), and risky when a release carries
-  migrations. Scope the banner as the feature; treat auto-apply as binary-only, maybe.
-- **Update / migration / Postgres runbook** — a documented, versioned upgrade path (doc home:
-  [Operations: Upgrading](/docs/operations/upgrading), linked from the migrations section of
-  `docs/self-hosting.md`). Keep two runbooks distinct — the user lumps them, the plan must not:
+- **Release-update notification** (built) — the running instance checks for a newer published
+  release and shows every Workspace Owner an in-app banner ("vX.Y is available").
+  **Auto-update** is an open, deployment-specific question: reasonable for the single
+  **binary** install, wrong for Docker/k8s (you roll a new image — that's watchtower/the
+  orchestrator's job, not ours), and risky when a release carries migrations.
+- **Update / migration / Postgres runbook** (built) — [Operations: Upgrading](/docs/operations/upgrading)
+  keeps two runbooks apart:
   - _App upgrade_ — pull the new image/binary, run `./sphericon migrate` (or `SPHERICON_DB_AUTO_MIGRATE` on a
     single replica), roll servers. Migrations are embedded and forward-only.
   - _Postgres major upgrade_ — a DBA operation (`pg_upgrade` or dump/restore across majors),
-    independent of the app release. The doc says "14+".
-- **Usage telemetry (opt-out)** — decided in
-  [ADR 0032](https://github.com/getsphericon/sphericon/blob/main/docs/adr/0032-instance-telemetry-report-and-release-check.md): a daily anonymous Telemetry
-  report on by default, switchable off by `SPHERICON_TELEMETRY` or by the owner in the app. The
-  release check is a separate channel with its own switch. Built: see
+    independent of the app release.
+- **Usage telemetry (opt-out)** (built) — a daily anonymous Telemetry report. `SPHERICON_MODE`
+  decides whether the report and the Release check run at all; `DO_NOT_TRACK=1` switches the
+  report off; otherwise a Staff member switches it in the Staff console. See
   [Telemetry and the Release check](/docs/operations/telemetry).
-
----
-
-## Phase 1 — Broadcasts MVP (detailed)
-
-> **Historical plan.** Kept as the record of how Phase 1 was scoped; it is not maintained as a
-> description of the code. Where it disagrees with `GLOSSARY.md`, the ADRs or the code, those
-> win. Known drift: there is no `Contact.status` (opt-out is an `Unsubscribe` row, ADR 0001);
-> `GET /e/u/{token}` renders the confirm page and only `POST` opts out (ADR 0012); bodies are
-> HTML in a textarea, not `@mantine/tiptap`; river is started by `App.RunJobs`; the goverter
-> converters live in `internal/api/site/resources`; Campaigns is a real navbar section.
-
-Goal of the MVP: a user can **create a broadcast, pick an audience, write an email, send (or schedule) it,
-and see a report** (sent / opened / clicked / unsubscribed). This is the first "sellable" value.
-
-### MVP scope (in / out)
-
-- **In:** a single email to an audience; HTML editor; merge tags (Liquid); immediate and scheduled
-  sending via the queue; open/click/unsubscribe tracking; per-campaign report.
-- **Audience (MVP):** "all active contacts in the workspace" + optionally a **rule segment**.
-  (Historical note: this originally read "snapshot segment"; that concept was later **rejected**
-  — see `GLOSSARY.md`. A segment is always a live rule; there is no static/snapshot kind.)
-- **Out (later phases):** visual drag-and-drop builder, reusable templates, full Liquid feature set,
-  A/B, bounce/complaint handling, dedicated domains.
-
-### 1. Data model (ent — `ent/schema/`)
-
-Follow the pattern in `ent/schema/segment.go` (workspace edge, `id` Int64 immutable, timestamps).
-
-- **`Broadcast`** — `workspace_id`, `name`, `subject`, `from_name`, `from_email` (or taken from the
-  default integration), `body_html`, `body_text` (auto-generated), `segment_id` (nullable → null = all
-  active contacts), `integration_id` (nullable → default), `status`
-  (enum: `draft`/`scheduled`/`sending`/`sent`/`failed`), `scheduled_at` (nullable), `sent_at` (nullable),
-  aggregate counters (`recipients_total`, `sent_count`, `opened_count`, `clicked_count`,
-  `unsubscribed_count`, `failed_count`), timestamps.
-- **`BroadcastRecipient`** (per-recipient delivery log — the basis for tracking) — `broadcast_id`,
-  `contact_id`, `workspace_id`, `status` (enum: `pending`/`sent`/`failed`), `opened_at`/`clicked_at`
-  (nullable), `error` (nullable), `sent_at` (nullable), timestamps. Unique index on
-  (`broadcast_id`, `contact_id`) for idempotency.
-
-Register the new edges on `Workspace` (`ent/schema/workspace.go`).
-**Order matters** (the migration diff reads generated `ent/`, not from `ent/schema/`):
-
-1. edit `ent/schema/*.go` → 2) `mise run generate:backend` (regenerates `ent/`) →
-2. `mise run db:generate name=add_broadcasts` → 4) `mise run db:migrate`.
-
-### 2. API contract (TypeSpec → ogen → TS)
-
-The frontend talks to the **site API**, so the primary contract goes there.
-
-- New `typespec/site/resources/broadcasts.tsp` (pattern: `typespec/site/resources/segments.tsp`):
-  a resource under `/w/{id}/broadcasts`, CRUD + actions **`POST .../{id}/send`** and
-  **`POST .../{id}/schedule`**, a `stats` field on the resource. Wire it into `typespec/site/main.tsp`.
-- The existing `typespec/external/resources/broadcasts.tsp` — extend to the richer model later; for the
-  MVP touch only the site spec.
-- `mise run generate:typespec` → `mise run generate:openapi` (TS client + react-query hooks in `src/generated/site`).
-
-### 3. Backend — handlers + converters
-
-- `internal/api/site/broadcasts.go` — handler methods (pattern: `internal/api/site/segments.go`):
-  CRUD + `Send`/`Schedule`. Scope every query by workspace.
-- goverter mapping for `BroadcastResource` in `internal/api/site/sitemap/` (add methods to the
-  hand-written interface next to `sitemap.go`; `converter_gen.go` is regenerated).
-
-### 4. Send engine (river — `internal/jobs/`)
-
-river is chosen for the actual sending (retries/concurrency); worker registration pattern is in
-`internal/jobs/worker.go` (currently only `ExampleWorker`).
-
-> **Start river first.** Verified: in `cmd/server/main.go` only watermill runs in a goroutine
-> (`application.RunPubSub`); `river.Client.Start()` is NOT called, and `jobs.NewClient` only constructs
-> the client. Without this, jobs enqueue and never run. The first step of this block is to wire river
-> worker startup (mirroring `RunPubSub` in `app.go`: provide the client via `do.Provide`, run
-> `client.Start(ctx)` in a goroutine from `main.go`, stop it in `Shutdown`).
-
-- **`SendBroadcastJob{broadcast_id}`** — moves the broadcast to `sending`, resolves the audience (all
-  active contacts or live-segment members), creates `BroadcastRecipient` rows (status=pending), and
-  enqueues a `SendMessageJob` per recipient. On completion → `sent`.
-- **`SendMessageJob{recipient_id}`** — renders html/text (merge tags via Liquid), rewrites links +
-  injects the open pixel + unsubscribe link, resolves the sender via `internal/messaging` (the
-  workspace's default enabled integration), sends, writes the result to `BroadcastRecipient`, increments
-  the broadcast counters.
-- Scheduled sending: `scheduled_at` → river `ScheduledAt` (native delayed enqueue).
-
-### 5. Delivery tracking (public endpoints — `internal/server/`)
-
-Pattern: the public tracker `internal/server/tracker.go` (serves `/t.js`, ingests events).
-
-- A signed token encodes `recipient_id`. Note: `internal/secrets/cipher.go` is **symmetric encryption**
-  (for integration configs), not HMAC. Either add a small JWT/HMAC helper (key from `cfg.EncryptionKey`)
-  or encrypt `recipient_id` with the existing cipher — don't assume `internal/secrets` provides a signing
-  primitive. Endpoints:
-  - `GET /e/o/{token}` — 1×1 gif pixel → `opened_at`, increment `opened_count`.
-  - `GET /e/c/{token}?u=<url>` — record `clicked_at`, increment, 302-redirect to the original URL.
-  - `GET /e/u/{token}` — unsubscribe action → `Contact.status = unsubscribed`, increment
-    `unsubscribed_count` (required for compliance — mandatory in the MVP).
-- When rendering the email in `SendMessageJob`: rewrite all `<a href>` to `/e/c/...`, add the pixel and
-  an unsubscribe footer.
-- **Hook for Phase 4 (automations):** record opens/clicks not only as columns on `BroadcastRecipient`
-  but also as **first-class rows in `Event`** (`email.opened` / `email.clicked`, with `subject_id` = the
-  contact and `properties.broadcast_id`). The recipient columns remain a denormalized convenience. This
-  gives automations (the "performed event" trigger) an engagement-event source from day one, so Phase 4
-  needs no backfill.
-
-### 6. Frontend (React — `src/`)
-
-- Enable the **Campaigns** item in `src/components/AppNavbar.tsx` (currently disabled "Coming soon").
-- Routes (pattern: `src/routes/segments/` and `src/routes/contacts/`): list, create/edit (composer),
-  report. Register them in `src/router.tsx`.
-- **Composer:** name, audience selector (all active / segment), subject, from, and an
-  **HTML editor** using **`@mantine/tiptap`** (official Mantine package — no custom CSS, Mantine only).
-- **Send/Schedule:** buttons calling the generated `siteBroadcastsSend/Schedule` hooks from
-  `src/generated/site`.
-- **Campaign report:** stat cards (recipients/sent/opened/clicked/unsubscribed) from `stats`.
-- i18n strings in `locales/`, then `mise run generate:i18n-types`.
-
-### 7. Tests (pattern: `internal/api/site/contacts_test.go`)
-
-- Handler tests for broadcasts CRUD + auth/workspace isolation (testhelper.Setup + typed ogen client).
-- Engine test: `SendBroadcastJob` creates recipients and sets statuses (with a fake sender).
-- Tracking test: hitting the open/click/unsub endpoints updates the recipient/contact and counters.
-- Frontend: composer-form tests (`mise run test:watch`).
-
-### Execution order (commits, directly on `main`, Conventional Commits)
-
-1. `feat`: ent schemas Broadcast + BroadcastRecipient + migration.
-2. `feat`: TypeSpec site/broadcasts + regeneration (`mise run generate`).
-3. `feat`: site handlers broadcasts (CRUD) + goverter mapping + tests.
-4. `feat`: river worker startup in main.go + SendBroadcastJob/SendMessageJob + render/merge tags + sender resolve.
-5. `feat`: public tracking endpoints (open/click/unsub) + link rewrite/pixel/footer.
-6. `feat`: frontend — Campaigns navbar + list + composer (@mantine/tiptap) + send/schedule.
-7. `feat`: frontend — campaign report (stats) + i18n.
-
-### End-to-end verification (Phase 1)
-
-1. `mise run setup` / `mise run dev` — bring up the stack (https://sphericon.localhost), mailpit on :8025.
-2. Create an SMTP integration (point it at mailpit) in Settings.
-3. Add a few active contacts.
-4. Create a broadcast → audience "all active" → write an email with <code>{{ first_name }}</code> → **Send**.
-5. Verify the emails arrive in **mailpit** (http://localhost:8025), merge tags are substituted, and there
-   is an unsubscribe link and a pixel.
-6. Open the email / click a link / hit unsubscribe → confirm the **campaign report** shows
-   opened/clicked/unsubscribed increasing, and the contact becomes `unsubscribed`.
-7. Scheduled send: set `scheduled_at` in the future → river sends it on time.
-8. `mise run test` (backend) and `mise run check` (tsc + oxlint/oxfmt + golangci-lint) are green.
-
-### Open questions / later
-
-- ~~**Snapshot segments:**~~ **Resolved: rejected.** A segment is always a live rule (no
-  `SegmentMember` membership table). See `GLOSSARY.md` anti-vocabulary.
-- ~~**Bounce/complaint handling**~~ **Done:** SES-over-SNS ingestion → Suppression (Phase 6);
-  SMTP DSN is still open.
-- ~~**External API broadcasts**~~ **Done:** `typespec/external/resources/broadcasts.tsp`.
