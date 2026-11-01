@@ -54,8 +54,9 @@ registration and PKCE (S256 only).
   revokes the connector). The row stays the same in the workspace settings; revoke it there like
   any other token and both tokens stop working.
 - The consent screen has two separate boxes. **Also allow sending** adds the send-class scopes.
-  **Also allow changing sending setup** adds `sending_domains:write` and `integrations:write`, so
-  the connector can add and verify a Sending domain and manage Integrations. Neither is ticked by
+  **Also allow changing sending setup** adds `sending_domains:write`, `tracking_domains:write` and
+  `integrations:write`, so the connector can add and verify a Sending domain, set and verify the
+  tracking domain (removing one stays with a person) and manage Integrations. Neither is ticked by
   default, and ticking one does not grant the other. Token management scopes (`tokens:*`), erasing
   contacts, the audit log, exports and captured messages can never be granted to a connector.
 - Any workspace member can approve a connector, but only for what their role allows: the consent
@@ -126,7 +127,7 @@ final send to a human:
 ## Let an agent set up your sending domain
 
 The **set-up-sending-domain** prompt takes an agent from "I want to send from `mail.example.com`"
-to a verified domain. The agent adds the domain, reads its DKIM, SPF, DMARC and tracking records,
+to a verified domain. The agent adds the domain, reads its DKIM, SPF and DMARC records,
 publishes them, triggers the check and reports back. A DNS change takes minutes to hours to be
 seen, so a failed check right after publishing is expected; the agent says so and checks again
 later instead of looping.

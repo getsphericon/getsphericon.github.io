@@ -19,6 +19,10 @@ section of the workspace **Settings**.
 ></script>
 ```
 
+To load the script and send events through a host of your own, such as `t.example.com`, set a
+[tracking domain](/docs/guide/deliverability#tracking-domain): once it serves, the snippet on the
+Tracking page uses it. A snippet already installed on the instance's host keeps working.
+
 The tracker stores a first-party `om_vid` cookie as the visitor id. It batches events and
 flushes them shortly after they are queued and when the page is hidden.
 

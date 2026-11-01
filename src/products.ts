@@ -193,7 +193,7 @@ export const products: Product[] = [
     example: {
       title: 'tracking domain',
       lines: [
-        ['track.example.com  CNAME  edge.sphericon…', 'dim'],
+        ['t.example.com  CNAME  edge.sphericon…', 'dim'],
         [''],
         ['Pending        waiting for the CNAME'],
         ['DNS verified   certificate can be issued', 'accent'],
@@ -204,7 +204,7 @@ export const products: Product[] = [
       { icon: 'shield', title: 'Verified domains only', text: 'You can only send from a domain you control. Sphericon signs every message with DKIM, whichever transport carries it.' },
       { icon: 'lock', title: 'Consent on every send', text: 'Suppressions, unsubscribes and, if you require it, confirmed opt-in are checked on every send path.' },
       { icon: 'webhook', title: 'Bounces become suppressions', text: 'Callbacks from SES, Postmark and Mailgun turn hard bounces and complaints into suppressions automatically.' },
-      { icon: 'eye', title: 'Links on your hostname', text: 'Put open and click tracking on track.your-domain, so the link host matches your From address.' },
+      { icon: 'eye', title: 'Links on your hostname', text: 'Serve open and click tracking, and the tracker, on a host of your own such as t.your-domain.' },
     ],
     steps: [
       { title: 'Verify your domain', text: 'Publish one TXT record. Nothing else in setup waits for DNS.' },

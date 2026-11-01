@@ -50,12 +50,14 @@ authenticator app), and the audit log of changes (an Enterprise feature, with a
 configurable retention).
 
 **Tracking.** The snippet to paste into the `<head>` of your site, a way to send a test event from
-your terminal, and the installation status that flips once the first event arrives. See
-[Tracking visitors and events](/docs/guide/tracking).
+your terminal, the installation status that flips once the first event arrives, and the optional
+tracking domain that serves the snippet and the links in your mail on a host of your own. See
+[Tracking visitors and events](/docs/guide/tracking) and
+[Tracking domain](/docs/guide/deliverability#tracking-domain).
 
 **Sending.** Integrations (the SMTP or SES providers the workspace sends through, with the
 inbound hook for bounces and complaints), sending domains with the DKIM, SPF and DMARC records to
-publish, the optional tracking domain for links in your mail, and the suppression list of addresses
+publish, and the suppression list of addresses
 that are never mailed. See [Deliverability and consent](/docs/guide/deliverability) and
 [Presets for provider callbacks](/docs/guide/presets).
 
