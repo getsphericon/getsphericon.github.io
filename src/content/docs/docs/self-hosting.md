@@ -313,12 +313,13 @@ Do not expose `SPHERICON_METRICS_ADDR` through the proxy.
 
 ### Tracking domains
 
-A workspace can put its mail's links on `track.<sending domain>` (see
-[Tracking domain](/docs/guide/deliverability#tracking-domain)). The core never terminates TLS for those hosts:
+A workspace can serve its mail's links and its tracker on a host of its own, such as `t.example.com`
+(see [Tracking domain](/docs/guide/deliverability#tracking-domain)). The core never terminates TLS for those hosts:
 your proxy does, and Sphericon only answers three questions ([ADR 0038](https://github.com/getsphericon/sphericon/blob/main/docs/adr/0038-tracking-domains-are-core-and-the-edge-is-not.md)).
 
 1. Which edge host should customers CNAME to? Set `SPHERICON_TRACKING_CNAME_TARGET` (for example
-   `edge.example.com`, a name that resolves to your proxy). Unset, the console shows no tracking row.
+   `edge.example.com`, a name that resolves to your proxy). Unset, the Tracking settings page shows no
+tracking domain section and none can be set.
 2. Which host did the request ask for? Your proxy sets the header named by
    `SPHERICON_TRACKING_HOST_HEADER` (for example `X-Forwarded-Host`) to the customer's host. It is
    believed only from a peer inside `SPHERICON_TRACKING_EDGE_CIDRS`, which defaults to loopback. When
@@ -326,8 +327,8 @@ your proxy does, and Sphericon only answers three questions ([ADR 0038](https://
    range explicitly, for example `SPHERICON_TRACKING_EDGE_CIDRS=172.18.0.0/16` for a Docker network or
    your VPC CIDR; keep it as narrow as the proxy's addresses, since any peer in it can set the host.
 3. May a certificate be issued for this host? `GET /tls/ask?domain=<host>` on the internal listener
-   (`SPHERICON_INTERNAL_ADDR`) answers 200 when the host is the `track.` host of a Sending domain whose
-   CNAME is verified, 404 otherwise. It is on the internal listener only, so publish that port to the
+   (`SPHERICON_INTERNAL_ADDR`) answers 200 when the host is a workspace's Tracking domain whose CNAME is
+   verified (a retired one included), 404 otherwise. It is on the internal listener only, so publish that port to the
    proxy and never through the public ingress.
 
 Caddy's on-demand TLS fits directly: it asks the endpoint before it requests a certificate.
@@ -360,10 +361,13 @@ https:// {
 with `SPHERICON_INTERNAL_ADDR=127.0.0.1:3400`, `SPHERICON_TRACKING_CNAME_TARGET=edge.example.com`
 and `SPHERICON_TRACKING_HOST_HEADER=X-Forwarded-Host`. Point `edge.example.com` at the same machine.
 
-A domain goes `pending`, then `dns_verified` (CNAME correct, `ask` answers 200), then `serving`
-(Sphericon fetched its own well-known path over HTTPS). A job rechecks every `dns_verified` and `serving` domain every 15 minutes. Until a
-domain is `serving`, and again if it regresses, mail uses `SPHERICON_APP_URL`. Removing a Sending domain
-or its CNAME leaves links already sent working on the Instance's host and dead on the customer's.
+A host goes `pending`, then `dns_verified` (CNAME correct, `ask` answers 200), then `serving`
+(Sphericon fetched its own well-known path over HTTPS). A job rechecks every `dns_verified` and
+`serving` host every 15 minutes. Until a workspace's current host is `serving`, and again if it
+regresses, its mail and snippet use `SPHERICON_APP_URL` and `SPHERICON_TRACKER_URL`. A host the
+workspace replaced or removed after it served is retired: it keeps serving, and `ask` keeps answering
+200, until its CNAME no longer points at the edge or the workspace forgets it. Only then is it reported
+removed to the edge.
 
 The external API can also live on its own host, such as `api.example.com`, if the proxy rewrites
 `/*` to `/api/*` (`rewrite ^/(.*)$ /api/$1 break;` in nginx, `rewrite * /api{uri}` in Caddy). The
@@ -442,7 +446,7 @@ It is off by default: set `SPHERICON_INTERNAL_ADDR` (`host:port`, for example `1
 `0.0.0.0:3400` in a container) to bind it, and publish that port only to the calling service, never
 through the public ingress. An empty `SPHERICON_INTERNAL_ADDR` means no listener and no route for the endpoints
 anywhere. Without the `staff` license the listener still serves `GET /tls/ask?domain=<host>` for the edge
-(200 for the Tracking domain host of a Sending domain whose CNAME is verified, 404 otherwise), and `/service` is 404. An address using the same port as `PORT` or `SPHERICON_METRICS_ADDR`, a malformed one, or one already
+(200 for a workspace's Tracking domain whose CNAME is verified, 404 otherwise), and `/service` is 404. An address using the same port as `PORT` or `SPHERICON_METRICS_ADDR`, a malformed one, or one already
 in use fails startup. The endpoints live under `/service` on that listener.
 
 A credential is created, rotated and revoked only from the command line; no endpoint can mint or

@@ -32,6 +32,7 @@ integration only what it needs, for example:
 - `webhooks:read`, `webhooks:write`, and the separate `webhooks:regenerate` (replace an endpoint's signing secret) and `webhooks:test` (send it a sample event)
 - `integrations:read`, `integrations:write` for sending providers (credentials are write-only: no response ever contains a password or secret key)
 - `sending_domains:read`, `sending_domains:write` for sending domains: create one, publish the returned DKIM record, then `POST /sending-domains/{id}/verify` and read the domain to see whether it verified (the DKIM private key is never returned)
+- `tracking_domains:read`, `tracking_domains:write` for the workspace's [tracking domain](/docs/guide/deliverability#tracking-domain): `POST /tracking-domains` sets a host, publish the returned CNAME, then `POST /tracking-domains/{id}/verify`; `tracking_domains:write` needs an Owner or an Admin
 - `export:read` (Enterprise) for the Export streams, `GET /export/events` and the other streams, which read a Workspace's rows page by page into a warehouse; see the [Export streams guide](/docs/export-streams) for the cursor, the overlap and a ClickHouse example
 
 Sending, activating, erasing, exporting and suppressing have their own scopes, so a token that can edit drafts cannot send mail and a token that can write contacts cannot erase, export or suppress them.

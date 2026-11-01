@@ -16,46 +16,64 @@ a broadcast's test send to your own address, which falls back to the platform's 
 domain is verified ([Quickstart](/docs/guide/quickstart#see-an-email-before-dns)). DNS can take time
 and nothing else in setup waits for it.
 
-### Tracking domain
+## Tracking domain
 
-By default the open pixel and click links in your mail point at your Sphericon instance's own host.
-To put them on your own hostname, open **Settings → Sending**, expand the domain and add the
-**Tracking domain (optional)** row next to the DKIM, SPF and DMARC records. The row appears only when
-your instance has an edge set up for it (`SPHERICON_TRACKING_CNAME_TARGET`, see
-[Self-hosting](/docs/self-hosting#tracking-domains)); on Sphericon Cloud it is always there.
+By default the links in your mail (opens, clicks, the one-click unsubscribe) and the tracking snippet
+on your site point at your Sphericon instance's own host. To serve them on a host of your own, such as
+`t.example.com`, set a tracking domain in **Settings → Tracking**. It belongs to the workspace, not to
+a sending domain, so a workspace that only runs the tracker or popups can have one too. The section
+appears only when your instance has an edge set up for it (`SPHERICON_TRACKING_CNAME_TARGET`, see
+[Self-hosting](/docs/self-hosting#tracking-domains)); on Sphericon Cloud it is always there. Setting
+it up takes an Owner or an Admin.
 
-1. At your DNS provider, add a `CNAME` record. The host is `track.<your sending domain>` (a fixed
-   name, you cannot pick another label) and the value is the edge host shown in the row.
-2. Click **Verify** (it checks the tracking CNAME and HTTPS along with the DKIM record), or wait: a
-   domain that is DNS verified or Serving is rechecked every 15 minutes. A **Pending** domain is
-   only checked when you click **Verify**.
-3. The row shows where the domain stands:
+1. Enter the host. Any name below a domain you own works (`t.example.com`, `links.mail.example.com`),
+   but not the domain itself.
+2. At your DNS provider, add the `CNAME` record the page shows: the host, pointing at the edge host.
+3. Click **Verify**, or wait: a host that is DNS verified or Serving is rechecked every 15 minutes. A
+   **Pending** host is only checked when you click **Verify**.
+4. The host shows where it stands:
    - **Pending**: the CNAME is missing or does not point at the edge host yet.
    - **DNS verified**: the CNAME is right, so the edge may now get a certificate for the host. Mail
-     still uses the instance's host.
-   - **Serving**: Sphericon fetched `https://track.<domain>/.well-known/sphericon-tracking` and got
-     the expected answer, so HTTPS works. New mail from this sending domain now builds its links on
-     the tracking domain, so the link host matches your From domain.
+     and the snippet still use the instance's host.
+   - **Serving**: Sphericon fetched `https://<your host>/.well-known/sphericon-tracking` and got the
+     expected answer, so HTTPS works. All new tracked mail of the workspace builds its links on the
+     host, and the snippet on the Tracking page loads from it.
 
-If the row stays **Pending** with a red note that another workspace has already verified the host,
-the same `track.<domain>` is held by a different workspace on this instance (a host belongs to one
-workspace). Your CNAME may be perfectly right, but the host cannot be yours until that workspace
-releases it, so use a sending domain of your own. The note is cleared by the next check that no longer
-loses the host, or finds the CNAME gone. The same fact is the `reason` (`host_taken`) of the
-`trackingRecord` in the API.
+A certificate takes time to issue, so a host stays **DNS verified** until HTTPS answers. Until it is
+**Serving**, no message carries a link that could fail TLS. If a later check finds the CNAME gone or
+HTTPS broken, the host drops back, new mail goes out on the instance's host again, and the workspace
+Owners are told.
 
-A certificate takes time to issue, so a domain stays in **DNS verified** until HTTPS answers. Until the
-domain is **Serving**, no message carries a link that could fail TLS. If a later check finds the CNAME
-gone or HTTPS broken, the domain drops back and new mail goes out on the instance's host again; the
-workspace Owners are told.
+If the host stays **Pending** with a note that another workspace has already verified it, the host
+belongs to a different workspace on this instance (a host belongs to one workspace at a time). Your
+CNAME may be right, but the host cannot be yours until that workspace releases it, so choose another
+one. The same fact is the `reason` (`host_taken`) of the tracking domain in the API.
 
-The tracking domain serves only link paths: clicks, opens and the one-click unsubscribe. The
-unsubscribe and confirm pages redirect to the instance's own host, and everything else on it answers 404.
+The host serves only the tracking paths: clicks, opens, the one-click unsubscribe, and the tracker
+(`/t.js` and `/collect`) for your workspace's own collect key. The unsubscribe and confirm pages
+redirect to the instance's own host, and everything else on it answers 404.
 
-**Removing a domain.** If you delete the sending domain, rename it or remove its CNAME, links already
-in recipients' inboxes keep working through the instance's own host, but the same links on
-`track.<domain>` stop reaching Sphericon. Keep the CNAME in place for as long as old mail may still
-be opened or clicked. The design is in [ADR 0038](https://github.com/getsphericon/sphericon/blob/main/docs/adr/0038-tracking-domains-are-core-and-the-edge-is-not.md)
+### Changing or removing the host
+
+Links already in recipients' inboxes and snippets already on your pages keep the host they were
+built with, so Sphericon never drops a host that has served while it may still be in use.
+
+- **Change** sets a new host as the **replacement**. The current host keeps serving until the
+  replacement is **Serving** too; then the replacement takes over and the old host is **retired**,
+  and the Owners are told. If the current host never served, the new one replaces it at once. Setting
+  a third host while a replacement waits discards that replacement.
+- **Remove** retires the current host if it has served and deletes it if it never did. A waiting
+  replacement becomes the current host.
+- A **retired** host gets no new mail and no new snippet, but keeps serving the links and snippets
+  already out there, and no other workspace can take it. It goes when its CNAME no longer points at
+  the edge (the Owners are told), or when you click **Forget**, which breaks those old links at once.
+  Setting a retired host again brings it back.
+
+So once you have moved to a new host, keep the old CNAME in place for as long as old mail may still be
+opened or clicked and old snippets may still run. Removing a host is not available to agents over MCP
+for the same reason. The design is in
+[ADR 0071](https://github.com/getsphericon/sphericon/blob/main/docs/adr/0071-a-tracking-domain-is-the-workspaces-own-not-a-sending-domains.md),
+[ADR 0038](https://github.com/getsphericon/sphericon/blob/main/docs/adr/0038-tracking-domains-are-core-and-the-edge-is-not.md)
 and [ADR 0036](https://github.com/getsphericon/sphericon/blob/main/docs/adr/0036-paths-embedded-in-sent-mail-and-customer-sites-outlive-a-major.md).
 
 ## Who may be mailed
