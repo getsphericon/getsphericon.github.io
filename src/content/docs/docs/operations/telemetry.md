@@ -2,7 +2,7 @@
 title: "Telemetry and the Release check"
 ---
 
-An Instance talks to the outside world on two channels, each with its own switch
+An Instance talks to the outside world on two channels
 ([ADR 0032](https://github.com/getsphericon/sphericon/blob/main/docs/adr/0032-instance-telemetry-report-and-release-check.md)).
 This page says exactly what each one does, how to turn it off and how to see what would be sent.
 
@@ -11,7 +11,7 @@ This page says exactly what each one does, how to turn it off and how to see wha
 | Telemetry report | Sends the project one anonymous report a day.                               | Yes, the fields listed below.  |
 | Release check    | Asks GitHub once a day for the newest stable release, for an update banner. | No.                            |
 
-Both are on by default. Refusing the report does not hide the update banner: a self-hoster who
+Both are on by default on a self-hosted Instance. Refusing the report does not hide the update banner: a self-hoster who
 declines telemetry still learns about a security release.
 
 ## The Telemetry report
@@ -42,7 +42,7 @@ Instance builds is checked against it. A new field is a schema change documented
 The Instance checks every hour whether a report is due and sends at most one a day. Each Instance
 reports at its own fixed time of day, 0 to 6 hours after midnight UTC, derived from its Instance
 id, so Instances that started together do not all report in the same minute. The first report
-waits until an Owner has seen the one-time notice in the app (Instance settings) and then until
+waits until a Staff member has seen the one-time notice in the Staff console and then until
 that offset has passed. A send has a five-second timeout and no retry queue: a failed send is logged
 at debug level and the next hourly check is the retry. It never affects boot, readiness or health.
 
@@ -53,31 +53,23 @@ is not a release (a prerelease or a development build).
 
 Once a day, and at start, the Instance does one `GET` of the public GitHub Releases `latest`
 (prereleases are excluded). It sends nothing about your Instance: no id, no version, no counts. If
-a newer stable release exists, Owners of the oldest Workspace see an update banner and the log
+a newer stable release exists, every Workspace Owner sees an update banner and the log
 shows a line pointing to `sphericon upgrade --check`. An unreachable GitHub changes nothing. A
 build that is not a release never asks.
 
 ## The switches
 
-| Variable                  | Effect                                                                                                                                              |
-| ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `SPHERICON_TELEMETRY`     | `true` sends the report and locks the in-app switch on, `false` never sends it and locks it off; unset leaves the choice to the Owner (default on). |
-| `DO_NOT_TRACK`            | `1` switches the report off and locks the in-app switch; it can never switch the report on.                                                         |
-| `SPHERICON_RELEASE_CHECK` | `false` switches the daily Release check off; it is independent of the Telemetry report and `DO_NOT_TRACK`. Default `true`.                         |
+| Setting                         | Effect                                                                                                                                                                 |
+| ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `SPHERICON_MODE`                | `selfhosted` (the default) leaves the report to the Staff console and makes the Release check. `saas` never sends the report and makes no Release check.              |
+| `DO_NOT_TRACK`                  | `1` switches the report off and locks the console's switch; it can never switch the report on. It does not touch the Release check.                                     |
+| The Staff console's switch      | On a self-hosted Instance without `DO_NOT_TRACK=1`, a Staff member turns the report off and on in the Staff console. It is on until someone turns it off.             |
 
-These are the same three rows as in the [environment table](/docs/configuration). Precedence for the
-Telemetry report, first match wins:
+`SPHERICON_MODE` and `DO_NOT_TRACK` are in the [configuration reference](/docs/configuration).
+When one of them decides, the console shows the switch locked and says which.
 
-1. `SPHERICON_TELEMETRY=false` turns it off.
-2. `DO_NOT_TRACK=1` turns it off.
-3. `SPHERICON_TELEMETRY=true` turns it on.
-4. Otherwise the in-app switch decides, and it is on until an Owner turns it off.
-
-When the environment decides, the in-app switch is shown locked and says which variable did it.
-Otherwise the Owners of the oldest Workspace (every Owner when several share it, following a
-transfer of the role) change it under Instance settings.
-
-To send nothing at all, set `SPHERICON_TELEMETRY=false` and `SPHERICON_RELEASE_CHECK=false`.
+To send no report at all, set `DO_NOT_TRACK=1`. The Release check has no switch of its own on a
+self-hosted Instance: it sends nothing about your Instance (see above).
 
 ## What is never sent
 
@@ -88,6 +80,6 @@ staging copy) shares its id.
 
 ## Preview the report
 
-Under Instance settings an Owner can open "Preview the report": the body exactly as the Instance
+In the Staff console a Staff member can open "Preview the report": the body exactly as the Instance
 would send it now, built by the code that sends it. It works whether or not sending is on, and
 opening it sends nothing.

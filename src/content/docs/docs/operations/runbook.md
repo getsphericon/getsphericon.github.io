@@ -156,13 +156,15 @@ ready to run has been waiting more than 15 minutes.
    growing backlog means the workers are not running or are stuck.
 3. Are the jobs failing and retrying? See
    [`SphericonJobFailureRatioHigh`](#sphericonjobfailureratiohigh).
-4. Workers need database connections from the `pgx` pool: check `db_pool_in_use{pool="pgx"}`
-   against `SPHERICON_PGX_MAX_CONNS` ([`SphericonDBPoolSaturated`](#sphericondbpoolsaturated)).
+4. The queue fetches and completes jobs through its own `river` pool, and the workers do their work
+   through the `sql` pool: check `db_pool_in_use` of both against `db_pool_max`
+   ([`SphericonDBPoolSaturated`](#sphericondbpoolsaturated)).
 5. Check that the river schema is applied. It is created by `sphericon migrate`; an instance that
    skipped migration has no job tables and the job metrics and workers fail.
 
-**Fix.** Restart stuck pods, raise `SPHERICON_PGX_MAX_CONNS` (and the database `max_connections`
-accordingly) if the pool is the limit, or add replicas. Worker concurrency per queue is fixed
+**Fix.** Restart stuck pods, raise the size of the pool that is the limit
+(`SPHERICON_RIVER_DB_MAX_CONNS` or `SPHERICON_DB_MAX_OPEN_CONNS`, and the database `max_connections`
+accordingly), or add replicas. Worker concurrency per queue is fixed
 in the binary.
 
 ## SphericonJobFailureRatioHigh
@@ -194,8 +196,8 @@ re-run the underlying action (for example, re-send the broadcast to the missed r
 ## SphericonDBPoolSaturated
 
 **Means.** One connection pool has been at or above 90% of its maximum for 10 minutes. `pool`
-is `sql` (requests, ent, event consumers; `SPHERICON_DB_MAX_OPEN_CONNS`, default 15) or `pgx` (the job
-queue; `SPHERICON_PGX_MAX_CONNS`, default 25).
+is `sql` (requests, ent, event consumers, job workers; `SPHERICON_DB_MAX_OPEN_CONNS`, default 15) or
+`river` (the job queue's own pool; `SPHERICON_RIVER_DB_MAX_CONNS`, default 25).
 
 **Check.**
 
@@ -205,20 +207,19 @@ queue; `SPHERICON_PGX_MAX_CONNS`, default 25).
    [Sizing](/docs/operations#sizing).
 
 **Fix.** Remove the slow query or the lock first. If the load is real, raise
-`SPHERICON_DB_MAX_OPEN_CONNS` or `SPHERICON_PGX_MAX_CONNS` and make sure the sum over all replicas stays below the
+`SPHERICON_DB_MAX_OPEN_CONNS` or `SPHERICON_RIVER_DB_MAX_CONNS` and make sure the sum over all replicas stays below the
 server's `max_connections`; beyond that, add a connection pooler. `SPHERICON_DB_MAX_IDLE_CONNS` must not
 exceed `SPHERICON_DB_MAX_OPEN_CONNS`.
 
 ## SphericonDBPoolWaits
 
 **Means.** More than 100 times in 15 minutes a request or worker had to wait for a free
-connection (`db_pool_wait_count` for the `sql` pool, `db_pool_empty_acquire_count` for the `pgx`
-pool). Unlike saturation this catches short, repeated stalls.
+connection (`db_pool_wait_count`, either pool). Unlike saturation this catches short, repeated
+stalls.
 
 **Check and fix.** The same as [`SphericonDBPoolSaturated`](#sphericondbpoolsaturated). Waiting
 that continues while `db_pool_in_use` is well below `db_pool_max` points at slow connection
-establishment (network, TLS, a pooler) instead of a too-small pool. On the `pgx` pool an acquire
-that only waited for a new connection to open also counts, so a cold or restarted pool can trip it.
+establishment (network, TLS, a pooler) instead of a too-small pool.
 
 ## SphericonEmailSendErrorsHigh
 

@@ -132,23 +132,24 @@ To try it without systemd, export the same variables and run `./sphericon migrat
 
 ## First run
 
-A fresh Instance lets anyone who reaches it register, and the first registration owns the first
-workspace. Do not expose it before one of these:
+Sign-up is always open: anyone who reaches the Instance can register, and each registration gets
+a Workspace of its own
+([ADR 0063](https://github.com/getsphericon/sphericon/blob/main/docs/adr/0063-every-instance-has-a-staff-console-and-sign-up-is-always-open.md)).
+A team joins a Workspace through an Invitation. Keep the Instance on a private network or behind a
+firewall rule if nobody else should register.
 
-1. **Close sign-up and create the first owner yourself** (recommended for a public host). Set
-   `SPHERICON_SIGNUP_OPEN=false`, then on the server run
+1. **Create the first owner.** Register in the app, or on the server run
 
    ```sh
    sphericon user create-owner ada@example.com Ada Lovelace
    ```
 
    It creates a verified user and its first workspace and prints a one-time password; sign in with
-   it and change it in your profile. The workspace is named "Personal". With sign-up closed, every
-   later user comes from an owner's invitation, and accepting an invitation keeps working.
+   it and change it in your profile. The workspace is named "Personal".
 
-2. **Leave sign-up open** and register the first owner yourself before the host is reachable by
-   anyone else (a private network or a firewall rule). Close sign-up afterwards if the instance is
-   not meant to take other registrations.
+2. **Create a Staff member** for the Instance's own settings (the Staff console, where the
+   Telemetry report is switched and previewed): `sphericon staff create ops@example.com`, which
+   prints a one-time password. Nobody needs one to use the product.
 
 Then run `sphericon doctor` (in Docker: `docker exec sphericon sphericon doctor`). It checks the
 database, `SPHERICON_APP_URL` and your mail setup and says what to fix
@@ -489,5 +490,5 @@ Pushing telemetry elsewhere (OTLP, stdout, several destinations at once) is conf
 
 Sizing, [backup and restore](/docs/operations/backup) and [upgrading](/docs/operations/upgrading)
 (including PostgreSQL major upgrades) are covered in the [Operations](/docs/operations) section.
-What the Instance sends, how to preview it and how to turn it off (`SPHERICON_TELEMETRY`, `DO_NOT_TRACK`,
-`SPHERICON_RELEASE_CHECK`) is on [Telemetry and the Release check](/docs/operations/telemetry).
+What the Instance sends, how to preview it and how to turn it off (`DO_NOT_TRACK`, the Staff console)
+is on [Telemetry and the Release check](/docs/operations/telemetry).

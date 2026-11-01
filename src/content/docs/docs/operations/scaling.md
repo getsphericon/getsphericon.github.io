@@ -15,22 +15,21 @@ Each replica opens two separate pools to PostgreSQL:
 | `SPHERICON_DB_MAX_OPEN_CONNS`    | `15`                                   | The `database/sql` pool: API requests and the domain-event consumers. The four event consumer groups hold long transactions on this pool.                                  |
 | `SPHERICON_DB_MAX_IDLE_CONNS`    | equal to `SPHERICON_DB_MAX_OPEN_CONNS` | Idle connections kept open. Must be between `0` and `SPHERICON_DB_MAX_OPEN_CONNS`.                                                                                         |
 | `SPHERICON_DB_CONN_MAX_LIFETIME` | `30m`                                  | How long a connection is reused before it is recycled.                                                                                                                     |
-| `SPHERICON_PGX_MAX_CONNS`        | `25`                                   | The pgx pool the job queue (river) runs on. It must cover river's worker slots (20 across the default, broadcasts and webhooks queues) plus `LISTEN` and runtime services. |
+| `SPHERICON_RIVER_DB_MAX_CONNS`   | `25`                                   | The job queue's (river) own pool: fetch, completion and leader election, plus one `LISTEN` connection outside it. Job workers do their database work through the `database/sql` pool, so it need not match their number. |
 
 Keep the total across all replicas below the server's `max_connections`:
 
 ```
-(SPHERICON_DB_MAX_OPEN_CONNS + SPHERICON_PGX_MAX_CONNS) x replicas + ~15% headroom <= max_connections - 3
+(SPHERICON_DB_MAX_OPEN_CONNS + SPHERICON_RIVER_DB_MAX_CONNS + 1) x replicas + ~15% headroom <= max_connections - 3
 ```
 
 The `- 3` reserves PostgreSQL's superuser slots (`superuser_reserved_connections`, default 3);
 the headroom covers backups, `psql` sessions, monitoring and migrations.
 
-With the defaults and two replicas: `(15 + 25) x 2 = 80`, about `92` with 15% headroom, which fits
-under `97` on a server with the stock `max_connections = 100`. The defaults therefore assume
+With the defaults and two replicas: `(15 + 25 + 1) x 2 = 82`, about `94` with 15% headroom, which
+fits under `97` on a server with the stock `max_connections = 100`. The defaults therefore assume
 **at most two replicas against `max_connections = 100`**. For more replicas, raise
-`max_connections` (each connection costs server memory) or lower the two pool sizes. Do not
-lower `SPHERICON_PGX_MAX_CONNS` below the worker total.
+`max_connections` (each connection costs server memory) or lower the two pool sizes.
 
 ## PgBouncer and other poolers
 
