@@ -1,29 +1,80 @@
 ---
 import '../styles/global.css'
+import { SEO } from 'astro-seo'
+import { Schema } from 'astro-seo-schema'
+import type { Thing, WithContext } from 'schema-dts'
 import Header from '../components/Header.astro'
 import Footer from '../components/Footer.astro'
+import { site } from '../site'
 
 interface Props {
   title: string
   description?: string
   noindex?: boolean
   bare?: boolean
+  image?: string
+  type?: 'website' | 'article'
+  publishedTime?: Date
 }
 
-const { title, description = 'Open-source marketing automation platform.', noindex = false, bare = false } = Astro.props
+const {
+  title,
+  description = 'Open-source marketing automation platform.',
+  noindex = false,
+  bare = false,
+  image = '/og/default.png',
+  type = 'website',
+  publishedTime,
+} = Astro.props
 const fullTitle = title === 'Sphericon' ? title : `${title} · Sphericon`
+const canonical = new URL(Astro.url.pathname, Astro.site).href
+const imageUrl = new URL(image, Astro.site).href
+const isHome = Astro.url.pathname === '/'
+
+// Structured data: the organization and the site on the home page, the article on posts.
+const schemas: WithContext<Thing>[] = []
+if (isHome) {
+  schemas.push(
+    { '@context': 'https://schema.org', '@type': 'Organization', name: 'Sphericon', url: String(Astro.site), logo: new URL('/favicon.svg', Astro.site).href, sameAs: [site.githubUrl] },
+    { '@context': 'https://schema.org', '@type': 'WebSite', name: 'Sphericon', url: String(Astro.site) },
+  )
+}
+if (type === 'article') {
+  schemas.push({
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    headline: title,
+    description,
+    image: imageUrl,
+    url: canonical,
+    datePublished: publishedTime?.toISOString(),
+    author: { '@type': 'Organization', name: 'Sphericon' },
+  })
+}
 ---
 
 <html lang="en">
   <head>
     <meta charset="utf-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#4338ca" />
     <meta name="generator" content={Astro.generator} />
-    <meta name="description" content={description} />
-    {noindex && <meta name="robots" content="noindex" />}
-    <link rel="canonical" href={new URL(Astro.url.pathname, Astro.site)} />
-    <title>{fullTitle}</title>
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <SEO
+      title={fullTitle}
+      description={description}
+      canonical={canonical}
+      noindex={noindex}
+      openGraph={{
+        basic: { title: fullTitle, type, image: imageUrl, url: canonical },
+        image: { width: 1200, height: 630, alt: 'Sphericon, open-source marketing automation platform' },
+        optional: { description, siteName: 'Sphericon', locale: 'en_US' },
+        article: type === 'article' ? { publishedTime: publishedTime?.toISOString() } : undefined,
+      }}
+      twitter={{ card: 'summary_large_image', title: fullTitle, description, image: imageUrl }}
+    />
+    {schemas.map((item) => <Schema item={item} />)}
     <script is:inline>
       // Same key as the docs, so one choice covers both. Empty or missing means follow the system.
       try {

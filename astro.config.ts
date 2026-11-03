@@ -17,6 +17,13 @@ export default defineConfig({
       title: 'Sphericon docs',
       logo: { src: './src/assets/logo.svg', alt: 'Sphericon' },
       description: 'Guides, operations and API reference for Sphericon.',
+      head: [
+        { tag: 'meta', attrs: { property: 'og:image', content: 'https://getsphericon.com/og/default.png' } },
+        { tag: 'meta', attrs: { property: 'og:image:width', content: '1200' } },
+        { tag: 'meta', attrs: { property: 'og:image:height', content: '630' } },
+        { tag: 'meta', attrs: { name: 'twitter:image', content: 'https://getsphericon.com/og/default.png' } },
+        { tag: 'meta', attrs: { name: 'theme-color', content: '#4338ca' } },
+      ],
       // The documentation lives under /docs; the marketing pages are Astro pages at the root.
       disable404Route: true,
       social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/getsphericon/sphericon' }],
