@@ -1,3 +1,7 @@
+## Git
+
+Never switch branches (`git checkout`, `git switch`) in the main working copy. It stays on `main`. For work on any other branch, use a separate worktree (`git worktree add`).
+
 ## Development
 
 When starting the dev server, use background mode:
