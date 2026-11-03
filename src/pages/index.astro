@@ -168,7 +168,7 @@ const primary =
             <div class="max-w-md">
               <div class={`${tile} ${tone.indigo}`} set:html={icons.workflow} />
               <h3 class="mt-4 font-semibold">Automation</h3>
-              <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">A sequence started by an event, run once per contact. Created as a draft, live only when you activate it.</p>
+              <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">A sequence started by an event, run once per contact, and ended early by an exit or goal event. Edits stay drafts until you publish.</p>
             </div>
             <div class="flex flex-wrap items-center gap-2 text-slate-400">
               {['signed_up', 'email', 'wait 2 days', 'email', 'apply_tag'].map((st, i, all) => (

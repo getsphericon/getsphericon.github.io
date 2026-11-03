@@ -43,7 +43,7 @@ export const products: Product[] = [
     benefits: [
       { icon: 'user', title: 'From anonymous to known', text: 'Identify a visitor and everything they did while anonymous lands on the contact, so pre-signup behavior is visible to your segments.' },
       { icon: 'zap', title: 'Events, not guesses', text: 'signed_up, viewed_pricing, email.opened: immutable events attached to the person, ready to segment on.' },
-      { icon: 'filter', title: 'Your own fields', text: 'Typed custom fields and tags that match your data model, not a fixed template of someone else’s.' },
+      { icon: 'filter', title: 'Your own fields', text: 'Typed custom fields and tags that match your data model, plus core attributes such as country, locale and birthday that Identify fills in. A date is read in your workspace time zone.' },
       { icon: 'code', title: 'Browser or server', text: 'Drop in one script, or send events from your backend. Load your history into a new setup.' },
     ],
     steps: [
@@ -74,12 +74,12 @@ export const products: Product[] = [
     },
     benefits: [
       { icon: 'filter', title: 'Rules, not lists', text: 'A segment is a query, not a copied list. Membership moves as your data does.' },
-      { icon: 'zap', title: 'Behavior-aware', text: 'Target on what contacts did, or did not do, within the last N days. Even email.opened and email.clicked.' },
+      { icon: 'zap', title: 'Behavior-aware', text: 'Target on what contacts did, or did not do, within the last N days, or on how many times they did it. Even email.opened and email.clicked.' },
       { icon: 'eye', title: 'See before you send', text: 'A live preview shows how many contacts match while you edit the rule.' },
       { icon: 'shield', title: 'Consent already applied', text: 'Opt-outs and suppressions always subtract from the result. You cannot target them by accident.' },
     ],
     steps: [
-      { title: 'Combine conditions', text: 'Attributes, custom fields, tags and events, with all/any and nested groups.' },
+      { title: 'Combine conditions', text: 'Attributes, custom fields (numbers and dates too), tags and events, with all/any and nested groups.' },
       { title: 'Check the preview', text: 'Confirm the audience is who you meant.' },
       { title: 'Send to it', text: 'Use the segment for a broadcast, evaluated the moment sending starts.' },
     ],
@@ -92,7 +92,7 @@ export const products: Product[] = [
     name: 'Broadcasts',
     short: 'One email to the right segment',
     headline: 'Write once. Send to exactly the right people.',
-    lede: 'Pick a segment, write the message, test it, then send now or schedule it. Read the report when it is done.',
+    lede: 'Pick a segment, write the message, test it, then send now or schedule it. Read the report when it is done, with the revenue it earned.',
     example: {
       title: 'broadcast',
       lines: [
@@ -106,14 +106,14 @@ export const products: Product[] = [
     },
     benefits: [
       { icon: 'user', title: 'Personal by default', text: 'Liquid merge tags and conditionals fill in the contact’s name and any of their custom fields.' },
-      { icon: 'eye', title: 'See it before they do', text: 'Send a test first. Once your domain is verified, to any address you choose.' },
-      { icon: 'send', title: 'Now or later', text: 'Send immediately or schedule it. Changed your mind? Unschedule it again.' },
+      { icon: 'eye', title: 'See it before they do', text: 'Send a test first, or capture it in a Test inbox and read it without mailing anyone. Once your domain is verified, to any address you choose.' },
+      { icon: 'send', title: 'Now or later', text: 'Send immediately or schedule it, through the integration you pick. Changed your mind? Unschedule it again.' },
       { icon: 'lock', title: 'Built to finish', text: 'Sending runs on a durable job queue backed by PostgreSQL, so a restart does not lose work.' },
     ],
     steps: [
       { title: 'Write it', text: 'Name, sender, subject and body, from a template or from scratch.' },
       { title: 'Test it', text: 'Check the message in a real inbox.' },
-      { title: 'Send it', text: 'Send or schedule, then read the report: sent, opened, clicked and unsubscribed.' },
+      { title: 'Send it', text: 'Send or schedule, then read the report: sent, opened, clicked and unsubscribed, and the orders credited to the last email a contact clicked.' },
     ],
     closing: 'Send your first broadcast',
     docs: '/docs/guide/sending',
@@ -137,15 +137,15 @@ export const products: Product[] = [
       ],
     },
     benefits: [
-      { icon: 'zap', title: 'Triggered by behavior', text: 'Start from any event, such as signed_up, the moment it happens.' },
-      { icon: 'workflow', title: 'Simple steps that compose', text: 'Send an email, wait, add or remove a tag. Put them in the order you need.' },
-      { icon: 'shield', title: 'Safe to try', text: 'Automations are created as drafts and go live only when you activate them. Contacts are enrolled once.' },
+      { icon: 'zap', title: 'Triggered by behavior', text: 'Start from any event, such as signed_up, the moment it happens, and end it early with an exit or goal event. For a one-line reaction, such as tagging whoever clicked a link, a Rule needs no sequence.' },
+      { icon: 'workflow', title: 'Simple steps that compose', text: 'Send an email, wait, add or remove a tag, or call a URL with your own headers and body. Put them in the order you need.' },
+      { icon: 'shield', title: 'Safe to try', text: 'Edits are saved as drafts, and a live automation changes only when you publish. Contacts are enrolled once.' },
       { icon: 'lock', title: 'Leaving means leaving', text: 'Every automation is its own unsubscribe scope, so opting out of one sequence does not silence the others.' },
     ],
     steps: [
       { title: 'Choose the trigger', text: 'The event that should start the sequence.' },
       { title: 'Add the steps', text: 'Emails, waits and tags, in order.' },
-      { title: 'Activate', text: 'Review the draft, then switch it on.' },
+      { title: 'Publish', text: 'Review the draft, then publish it to go live.' },
     ],
     closing: 'Automate your first sequence',
     docs: '/docs/guide/sending',
@@ -201,7 +201,7 @@ export const products: Product[] = [
       ],
     },
     benefits: [
-      { icon: 'shield', title: 'Verified domains only', text: 'You can only send from a domain you control. Sphericon signs every message with DKIM, whichever transport carries it.' },
+      { icon: 'shield', title: 'Verified domains only', text: 'You can only send from a domain you control. Sphericon signs every message with DKIM, and flags a domain whose published DMARC record is not ready for bulk mail.' },
       { icon: 'lock', title: 'Consent on every send', text: 'Suppressions, unsubscribes and, if you require it, confirmed opt-in are checked on every send path.' },
       { icon: 'webhook', title: 'Bounces become suppressions', text: 'Callbacks from SES, Postmark and Mailgun turn hard bounces and complaints into suppressions automatically.' },
       { icon: 'eye', title: 'Links on your hostname', text: 'Serve open and click tracking, and the tracker, on a host of your own such as t.your-domain.' },
@@ -237,7 +237,7 @@ export const products: Product[] = [
     ],
     steps: [
       { title: 'Connect', text: 'Claude Code or any MCP client with a token, or a claude.ai connector over OAuth 2.1.' },
-      { title: 'Ask', text: 'Or start from a playbook: welcome, win-back or list hygiene.' },
+      { title: 'Ask', text: 'Or start from a playbook: welcome, win-back, list hygiene or setting up a sending domain.' },
       { title: 'Review and send', text: 'The agent drafts. You decide what goes out.' },
     ],
     closing: 'Connect your agent',
