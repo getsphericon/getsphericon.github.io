@@ -11,7 +11,7 @@ const { release } = Astro.props
 const { Content } = await render(release)
 ---
 
-<Layout title={`${release.data.version} · ${release.data.title}`}>
+<Layout title={`${release.data.version} · ${release.data.title}`} description={`Sphericon ${release.data.version}: ${release.data.title}.`}>
   <article class="mx-auto max-w-2xl">
     <p class="font-mono text-sm text-slate-500">{release.data.version}</p>
     <h1 class="text-3xl font-bold">{release.data.title}</h1>

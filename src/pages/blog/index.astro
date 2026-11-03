@@ -7,7 +7,7 @@ const posts = (await getCollection('blog', ({ data }) => !data.draft)).sort(
 )
 ---
 
-<Layout title="Blog">
+<Layout title="Blog" description="News, guides and engineering notes from the Sphericon team.">
   <h1 class="text-3xl font-bold">Blog</h1>
   {posts.length === 0 && <p class="mt-6 text-slate-500">No posts yet.</p>}
   <ul class="mt-8 space-y-8">
