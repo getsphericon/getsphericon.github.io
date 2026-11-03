@@ -39,16 +39,56 @@ PostgreSQL, so a restart does not lose work.
 
 An automation starts when a contact does something and then runs an ordered list of steps.
 
-| Step         | What it does                                        |
-| ------------ | --------------------------------------------------- |
-| `email`      | Send a message with its own subject and HTML body.  |
-| `wait`       | Pause for a number of seconds before the next step. |
-| `apply_tag`  | Add a tag to the enrolled contact.                  |
-| `remove_tag` | Remove a tag from the enrolled contact.             |
+| Step         | What it does                                                                                 |
+| ------------ | -------------------------------------------------------------------------------------------- |
+| `email`      | Send a message with its own subject and HTML body.                                           |
+| `wait`       | Pause for a number of seconds before the next step.                                          |
+| `apply_tag`  | Add a tag to the enrolled contact.                                                           |
+| `remove_tag` | Remove a tag from the enrolled contact.                                                      |
+| `http`       | `POST` a JSON body to a URL, with up to five headers of your own and an optional signature. |
 
-The trigger is an event action, such as `signed_up`. A contact is enrolled once. Automations are
-created as drafts and have to be activated. Each automation is its own unsubscribe scope, so
+The trigger is an event action, such as `signed_up`. A contact is enrolled once. The steps can
+use the event that started the enrollment as `event.action` and `event.properties`, next to the
+contact's own fields. An `http` step's body is a Liquid template that has to render to valid JSON;
+dry-run it for a contact before you publish. Its URL, headers and signing secret are never returned
+once saved.
+
+**Leaving early.** An automation can name **exit events** and one **goal event**. When the contact
+records one of them, the enrollment ends at once: an exit event as an early exit, the goal event as
+`goal_reached`. Neither may be the trigger. Each automation is its own unsubscribe scope, so
 leaving one sequence does not silence the others.
+
+**Draft and publish.** An edit never changes a live automation. It writes a draft, and **Publish**
+makes the draft live. Contacts already enrolled finish on the version they began on. **Revert**
+drops the draft, and **Deactivate** stops new enrollments and keeps the live version. A new
+automation is inactive until you publish it, and publishing needs its own scope (see
+[API](/docs/guide/api)).
+
+**Results.** The automation's report shows its emails' engagement and, over a period of 7, 14, 30
+or 90 days, how many enrollments began, completed, reached the goal, left early or failed, and the
+revenue credited to it (see [Orders and revenue](/docs/guide/tracking#orders-and-revenue)).
+
+## Rules
+
+A rule is a single reaction to a single event, with no sequence behind it: when one of its trigger
+events is recorded for a contact and the contact matches its condition, its actions run at once.
+Use it for "tag whoever clicked this link" or "tell the CRM a trial started". Anything with a delay
+or an email stays an automation.
+
+| Action              | What it does                                                           |
+| ------------------- | ---------------------------------------------------------------------- |
+| `apply_tag`         | Add a tag to the contact.                                              |
+| `remove_tag`        | Remove a tag from the contact.                                         |
+| `enroll_automation` | Enroll the contact in an automation, once ever.                        |
+| `http`              | `POST` to a URL, as an automation's `http` step does.                  |
+
+The condition is the same one a [segment](/docs/guide/segments) uses, and it may also test the
+triggering event's own properties. A rule fires on every matching event, so "once per contact" is a
+condition plus an `apply_tag` action. A rule has at most 20 actions, of which at most 5 call a URL.
+
+Rules follow the same draft and publish cycle as automations, and act only on events recorded after
+they were published. Dry-run a rule on a stored event to see what would fire; nothing runs. Every
+time a rule fires it leaves a **firing**, which records how each action ended.
 
 ## Transactional email
 

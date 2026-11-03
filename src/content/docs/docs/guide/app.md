@@ -28,8 +28,14 @@ contacts are always excluded. See [Sending email](/docs/guide/sending).
 **Templates.** Reusable email bodies written in MJML with merge tags such as
 `{{ first_name }}`, shared by broadcasts and automations.
 
-**Automations.** Sequences started by an event and run once per contact: send an email, apply a
-or remove a tag, wait, post JSON to a URL. Activate and deactivate them here and inspect failed enrollments.
+**Automations.** Sequences started by an event and run once per contact: send an email, apply or
+remove a tag, wait, post JSON to a URL. An edit is a draft until you publish it; you can also
+deactivate an automation, end enrollments early with exit and goal events, read its results and
+revenue, and inspect failed enrollments. See [Sending email](/docs/guide/sending#automations).
+
+**Rules.** A single reaction to an event, without a sequence: tag the contact, enroll them in an
+automation or call a URL. Rules are drafted and published like automations and list their firings.
+See [Sending email](/docs/guide/sending#rules).
 
 **Transactional emails.** The log of single emails your app triggered over the
 [API](/docs/guide/api): recipient, status, send time and the error when delivery failed.

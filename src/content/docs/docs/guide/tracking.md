@@ -92,10 +92,21 @@ A contact is anchored by an internal id. Email, phone and `subject_id` are alias
 unique within the workspace and any of them may be absent. Events attach to the resolved
 contact at ingest, never by email, so changing someone's email does not orphan their history.
 
+## Core attributes
+
+A trait named after a core attribute writes that attribute: `firstName`, `lastName`, `timeZone`,
+`country`, `locale`, `birthday`, `city` and `avatar`. A value you assert overwrites the stored one,
+`null` clears it and a missing key keeps it. A value that is not valid for its attribute, such as
+an unknown time zone, `USA` as a country or a photo address that is not https, is dropped, and the
+rest of the identify still succeeds. `subjectId`, `email` and `phone` only fill a contact that has
+none. The tracker also sends the browser's time zone and language, which fill the time zone and
+locale only while the contact has none.
+
 ## Custom fields
 
 Any trait or property you send under an unknown key is created as a typed **custom field** with
-an inferred type. From that moment it is a first-class, renameable field the segment builder
+an inferred type, or you set the type yourself, for example a date-time. A date without an offset is
+read in the workspace time zone. From that moment it is a first-class, renameable field the segment builder
 offers, not an anonymous bag of keys.
 
 ## Server-side events
