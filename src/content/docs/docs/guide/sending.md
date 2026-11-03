@@ -111,6 +111,16 @@ nobody can opt out of their own password reset, but it still respects the suppre
 address that hard-bounced or complained is never mailed. A suppressed destination returns the
 status `suppressed`.
 
+## Test inbox
+
+A **test inbox** is an integration that sends nothing outside. What a send through it would have
+delivered is kept as a **captured message**, with its headers, its HTML and text and its links, and
+you read it in the app. Use it to see what your mail looks like and does before a real provider or
+DNS exists. Pick it, make it the default and rate-limit it like any other integration. Every report
+of such a send says it was captured, not delivered. It keeps at most 200 messages for 7 days and
+takes at most 200 a day, and erasing a contact erases the messages captured for its address. The
+messages are also available over the [API](/docs/guide/api).
+
 ## Transports
 
 Add one or more integrations in **Settings → Sending**:

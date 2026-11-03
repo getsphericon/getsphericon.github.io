@@ -8,9 +8,14 @@ the header moves you between workspaces, and **Docs** in the header opens this d
 
 ## Sections
 
-**Overview.** The landing page of a workspace: how many contacts it has and shortcuts to the
-activity feed, contacts and settings. While the workspace is new it also shows a setup checklist
-(add a contact, connect an integration, verify a sending domain, send a first email).
+**Overview.** The landing page of a workspace. It leads with **Needs attention**: what is stopping
+or slowing your mail right now, such as a sending domain that lost its DKIM record or has no DMARC
+record, a provider that refused your credentials or stopped the account, a broadcast that is on hold
+or failed, an automation that cannot send, a webhook that disabled itself, or a daily sending limit
+that is spent. Each item links to where you fix it, and the block is absent while nothing is wrong.
+Below it come the setup checklist while the workspace is new (add a contact, connect an
+integration, verify a sending domain, send a first email), recent sends, the period's sending and
+audience, and revenue once the first order arrives.
 
 **Contacts.** Every person the workspace knows, identified or anonymous. Filter by status, open a
 contact to see its fields, tags and event history, edit custom fields, export its data or erase it
@@ -40,6 +45,10 @@ See [Sending email](/docs/guide/sending#rules).
 **Transactional emails.** The log of single emails your app triggered over the
 [API](/docs/guide/api): recipient, status, send time and the error when delivery failed.
 
+**Analytics.** Reports over the last 7, 30 or 90 days, counted by calendar day in the workspace time
+zone: email metrics, clicks by link, opens by hour, new people, subscribed people, events and recent
+activity.
+
 **Activity.** The live feed of events arriving in the workspace, from the tracker, the API and
 Sphericon's own delivery events. Filter by action and open an event to see its properties.
 
@@ -50,7 +59,7 @@ Sphericon's own delivery events. Filter by action and open an event to see its p
 **General.** The workspace name and the postal address shown in the footer of every marketing
 email (CAN-SPAM requires one).
 
-**Team and security.** Members and their roles, pending invitations, the requirement that every
+**Team and security.** Members and their [roles](#roles), pending invitations, the requirement that every
 member uses two-factor authentication (a sign-in with a Passkey meets it, a password sign-in needs an
 authenticator app), and the audit log of changes (an Enterprise feature, with a
 configurable retention).
@@ -73,3 +82,24 @@ that are never mailed. See [Deliverability and consent](/docs/guide/deliverabili
 **AI agents (MCP).** The address to add as a connector in Claude or any MCP client so an agent can
 work in the workspace. Only an owner or admin can approve the connection. See
 [MCP for agents](/docs/guide/mcp).
+
+## Roles
+
+Every member is an owner, an admin or a member. Access is checked on every operation, in the app,
+the API and over MCP, and the app hides the controls a role cannot use.
+
+| What                                                                                     | Owner | Admin | Member |
+| ---------------------------------------------------------------------------------------- | :---: | :---: | :----: |
+| Contacts, segments, tags, templates, broadcasts, automations, rules, imports and sending |   ✓   |   ✓   |   ✓    |
+| Read the suppression list                                                                |   ✓   |   ✓   |   ✓    |
+| Export or erase contacts, add or lift suppressions                                       |   ✓   |   ✓   |        |
+| Invite and remove members, change roles, see anyone's connections                        |   ✓   |   ✓   |        |
+| API tokens, webhooks, integrations, sending domains, tracking domain                     |   ✓   |   ✓   |        |
+| Audit log, two-factor requirement                                                        |   ✓   |   ✓   |        |
+| Workspace name, address and time zone, brand kit, join domains                           |   ✓   |   ✓   |        |
+| Reporting currency and attribution window                                                |   ✓   |   ✓   |        |
+| Make someone an owner, change or remove an owner                                         |   ✓   |       |        |
+| Delete and restore the workspace                                                         |   ✓   |       |        |
+
+A member can still send, but cannot export the contacts or lift a suppression: those are the two
+bulk actions on personal data and on consent.

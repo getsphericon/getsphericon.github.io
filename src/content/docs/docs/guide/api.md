@@ -33,9 +33,19 @@ integration only what it needs, for example:
 - `integrations:read`, `integrations:write` for sending providers (credentials are write-only: no response ever contains a password or secret key)
 - `sending_domains:read`, `sending_domains:write` for sending domains: create one, publish the returned DKIM record, then `POST /sending-domains/{id}/verify` and read the domain to see whether it verified (the DKIM private key is never returned)
 - `tracking_domains:read`, `tracking_domains:write` for the workspace's [tracking domain](/docs/guide/deliverability#tracking-domain): `POST /tracking-domains` sets a host, publish the returned CNAME, then `POST /tracking-domains/{id}/verify`; `tracking_domains:write` needs an Owner or an Admin
+- `captured_messages:read`, `captured_messages:write` for the [Test inbox](/docs/guide/sending#test-inbox): list and read what it kept, delete one or all
 - `export:read` (Enterprise) for the Export streams, `GET /export/events` and the other streams, which read a Workspace's rows page by page into a warehouse; see the [Export streams guide](/docs/export-streams) for the cursor, the overlap and a ClickHouse example
 
 Sending, publishing, erasing, exporting and suppressing have their own scopes, so a token that can edit drafts cannot send mail and a token that can write contacts cannot erase, export or suppress them.
+
+## Personal tokens
+
+A member can also create a **personal token** in **Settings → Developers**, for the scripts and tools
+they run. It is shown once, may expire, and acts as its member: it can do no more than the member's
+role allows at the moment of each request, and it stops working when the member leaves the
+workspace. What it does is recorded in the audit log as done by that member. Owners and admins see
+and revoke everyone's personal tokens, and API tokens, which belong to the workspace and outlive
+whoever made them, are managed by owners and admins only.
 
 ## What the external API covers
 
@@ -53,6 +63,7 @@ Sending, publishing, erasing, exporting and suppressing have their own scopes, s
 | Transactional       | `/emails`                                                            |
 | Consent             | `/unsubscribes`, `/suppressions`                                     |
 | Sending domains     | `/sending-domains`, `/sending-domains/rates`                         |
+| Test inbox          | `/captured-messages`                                                 |
 | Webhooks            | `/webhooks`                                                          |
 
 ### Example: upsert contacts
