@@ -26,7 +26,7 @@ integration only what it needs, for example:
 - `events:write`
 - `segments:read`, `segments:write`
 - `broadcasts:write`, and the separate `broadcasts:send` to actually send
-- `automations:write`, and `automations:activate` to turn one on
+- `automations:read`, `automations:write`, and the separate `automations:publish` to make a draft live (these cover rules too)
 - `enrollments:read` to read where each Contact is in an automation, and why a failed one failed
 - `emails:send` for transactional mail
 - `webhooks:read`, `webhooks:write`, and the separate `webhooks:regenerate` (replace an endpoint's signing secret) and `webhooks:test` (send it a sample event)
@@ -35,7 +35,7 @@ integration only what it needs, for example:
 - `tracking_domains:read`, `tracking_domains:write` for the workspace's [tracking domain](/docs/guide/deliverability#tracking-domain): `POST /tracking-domains` sets a host, publish the returned CNAME, then `POST /tracking-domains/{id}/verify`; `tracking_domains:write` needs an Owner or an Admin
 - `export:read` (Enterprise) for the Export streams, `GET /export/events` and the other streams, which read a Workspace's rows page by page into a warehouse; see the [Export streams guide](/docs/export-streams) for the cursor, the overlap and a ClickHouse example
 
-Sending, activating, erasing, exporting and suppressing have their own scopes, so a token that can edit drafts cannot send mail and a token that can write contacts cannot erase, export or suppress them.
+Sending, publishing, erasing, exporting and suppressing have their own scopes, so a token that can edit drafts cannot send mail and a token that can write contacts cannot erase, export or suppress them.
 
 ## What the external API covers
 
@@ -47,7 +47,8 @@ Sending, activating, erasing, exporting and suppressing have their own scopes, s
 | Segments            | `/segments`, `/segments/preview`                                     |
 | Templates           | `/templates`                                                         |
 | Broadcasts          | `/broadcasts`, `…/segment`, `…/schedule`, `…/test-send`, `…/report` |
-| Automations         | `/automations`, `…/activate`, `…/deactivate`                         |
+| Automations         | `/automations`, `…/publish`, `…/revert`, `…/deactivate`, `…/report` |
+| Rules               | `/rules`, `…/publish`, `…/dry-run`, `/rules/{id}/firings`            |
 | Enrollments         | `/automations/{id}/enrollments`                                      |
 | Transactional       | `/emails`                                                            |
 | Consent             | `/unsubscribes`, `/suppressions`                                     |

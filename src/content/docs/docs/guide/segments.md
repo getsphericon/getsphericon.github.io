@@ -10,13 +10,14 @@ choose who receives a broadcast.
 In **Segments**, combine conditions with all/any and nest groups where needed. A condition can
 look at:
 
-- **Attributes**: email, name, time zone and the other core fields.
+- **Attributes**: email, name, time zone, country, locale, city, birthday and the other core fields.
 - **Custom fields**: any field your tracking or import created, with the operators its type
-  supports. A rule that names a field your workspace does not have is rejected when you save
+  supports: text is compared, a number is greater or less than a value, and a date is before or
+  after a moment or within the last N days. A rule that names a field your workspace does not have is rejected when you save
   the segment.
 - **Tags**: whether the contact has a tag or not.
-- **Events**: whether the contact did, or did not do, something, optionally within the last
-  N days. Because delivery facts are events, you can target on `email.opened` or `email.clicked`
+- **Events**: whether the contact did, or did not do, something, or did it at least or at most
+  N times, optionally within the last N days. Because delivery facts are events, you can target on `email.opened` or `email.clicked`
   the same way.
 
 A live preview shows how many contacts match as you edit.
@@ -36,12 +37,17 @@ The definition is a rule group: a `combinator` (`and` or `or`), an optional `not
 each a rule or a nested group, told apart by `kind`. A rule has a `field`, an `operator` and a
 `value`. An empty group matches every contact.
 
-| Field                 | Operators                                                | Value                          |
-| --------------------- | -------------------------------------------------------- | ------------------------------ |
-| `email`, `phone`, ... | `eq`, `neq`, `contains`, `beginsWith`, `null`, `notNull` | the text to compare            |
-| `custom:<key>`        | `eq`, `neq`, `contains`, `notNull`                       | the value to compare           |
-| `tag`                 | `has`, `doesNotHave`                                     | the tag name                   |
-| `event:<action>`      | `performed`, `notPerformed`                              | a window in days, blank = ever |
+| `kind`       | Tests                                           | Fields                                                           |
+| ------------ | ----------------------------------------------- | ---------------------------------------------------------------- |
+| `rule`       | An attribute, a tag or a text custom field      | `field` (`email`, `country`, `tag`, `custom:<key>`, ...), `operator` (`eq`, `neq`, `contains`, `beginsWith`, `null`, `notNull`, and `has` or `doesNotHave` for a tag), `value` |
+| `event`      | How many times the contact did something       | `action`, `operator` (`atLeast`, `atMost`), `times`, optional `withinDays` |
+| `number`     | A number custom field                           | `field` (`custom:<key>`), `operator` (`gt`, `gte`, `lt`, `lte`), `value` |
+| `date`       | A date-time custom field or `birthday`          | `field`, `operator` (`before`, `after`), `at`                    |
+| `dateWithin` | A date that falls in the last N days            | `field`, `withinDays`                                            |
+| `group`      | Nested rules                                    | `combinator`, optional `not`, `rules`                            |
+
+"Did it" is `atLeast` 1 and "did not do it" is `atMost` 0. A date counts only with a UTC offset,
+and a missing value makes a test false.
 
 ```sh
 curl https://sphericon.example.com/api/segments/preview \
@@ -49,5 +55,5 @@ curl https://sphericon.example.com/api/segments/preview \
   -H "Content-Type: application/json" \
   -d '{"definition":{"kind":"group","combinator":"and","rules":[
         {"kind":"rule","field":"custom:plan","operator":"eq","value":"pro"},
-        {"kind":"rule","field":"event:signed_up","operator":"performed","value":"30"}]}}'
+        {"kind":"event","action":"signed_up","operator":"atLeast","times":1,"withinDays":30}]}}'
 ```

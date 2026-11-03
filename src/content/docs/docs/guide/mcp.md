@@ -76,7 +76,8 @@ registration and PKCE (S256 only).
 | Templates           | `templates_*`                                                                          |
 | Writing mail        | `brand_get`, `email_schema`, `email_lint`                                              |
 | Broadcasts          | `broadcasts_*`, `broadcasts_set_segment`, `broadcasts_test_send`, `broadcasts_report` |
-| Automations         | `automations_*`, `automations_deactivate`, `automations_dry_run_http_step`             |
+| Automations         | `automations_*`, `automations_publish`, `automations_deactivate`, `automations_dry_run_http_step` |
+| Rules               | `rules_*`, `rules_publish`, `rules_dry_run`                                            |
 | Enrollments         | `enrollments_list`, `enrollments_get`                                                  |
 | Reference and rates | `custom_fields_list`, `sending_domains_list`, `sending_domains_rates`                  |
 | Sending setup       | `sending_domains_create`, `sending_domains_get`, `sending_domains_verify`, `integrations_*` |
@@ -90,8 +91,8 @@ returns; it depends on the token's scopes.
 
 - **Authoring, not sending, by default.** Broadcasts and automations are created as drafts.
   The send-class tools (`emails_send`, `broadcasts_schedule`, `broadcasts_unschedule`,
-  `automations_activate`) need their own API scope (`emails:send`, `broadcasts:send`,
-  `automations:activate`) **and** the extra `mcp:send` scope on the token. Without `mcp:send`
+  `automations_publish`, `rules_publish`) need their own API scope (`emails:send`, `broadcasts:send`,
+  `automations:publish`) **and** the extra `mcp:send` scope on the token. Without `mcp:send`
   they are not even listed.
 - **Consent only narrows.** An agent can suppress an address or record an unsubscribe. Resubscribing
   and lifting a suppression are not available over `/api` or MCP at all.
