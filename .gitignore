@@ -25,3 +25,6 @@ pnpm-debug.log*
 
 # OpenAPI specifications fetched at build time (scripts/fetch-spec.ts)
 src/generated/
+
+# Worktrees of agent sessions.
+.claude/worktrees/
