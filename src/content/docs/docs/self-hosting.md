@@ -23,7 +23,7 @@ not need most of it):
 
 | Setting                    | What to put there                                                            |
 | -------------------------- | ---------------------------------------------------------------------------- |
-| `DATABASE_URL`             | The PostgreSQL connection string.                                            |
+| `SPHERICON_DATABASE_URL`   | The PostgreSQL connection string.                                            |
 | `SPHERICON_JWT_SECRET`     | A random value: `openssl rand -hex 32`.                                      |
 | `SPHERICON_ENCRYPTION_KEY` | A key you create once: `sphericon genkey` (see [below](#generate-the-keys)). |
 
@@ -68,7 +68,7 @@ You already have PostgreSQL somewhere.
    ```sh
    docker run -d --name sphericon -p 3000:3000 \
      -e SPHERICON_ENV=production \
-     -e DATABASE_URL="postgres://user:pass@db:5432/sphericon?sslmode=require" \
+     -e SPHERICON_DATABASE_URL="postgres://user:pass@db:5432/sphericon?sslmode=require" \
      -e SPHERICON_JWT_SECRET="<from step 1>" \
      -e SPHERICON_ENCRYPTION_KEY="<from step 1>" \
      -e SPHERICON_APP_URL="https://mail.example.com" \
@@ -92,7 +92,7 @@ You already have PostgreSQL somewhere.
 
    ```ini
    SPHERICON_ENV=production
-   DATABASE_URL=postgres://user:pass@host:5432/sphericon?sslmode=require
+   SPHERICON_DATABASE_URL=postgres://user:pass@host:5432/sphericon?sslmode=require
    SPHERICON_JWT_SECRET=<openssl rand -hex 32>
    SPHERICON_ENCRYPTION_KEY=<sphericon genkey>
    SPHERICON_APP_URL=https://mail.example.com
@@ -111,11 +111,11 @@ To try it without systemd, export the same variables and run `./sphericon migrat
 
 ### Kubernetes
 
-1. Create a Secret with `DATABASE_URL`, `SPHERICON_JWT_SECRET` and `SPHERICON_ENCRYPTION_KEY`:
+1. Create a Secret with `SPHERICON_DATABASE_URL`, `SPHERICON_JWT_SECRET` and `SPHERICON_ENCRYPTION_KEY`:
 
    ```sh
    kubectl create secret generic sphericon-secrets \
-     --from-literal=DATABASE_URL="postgres://user:pass@host:5432/sphericon?sslmode=require" \
+     --from-literal=SPHERICON_DATABASE_URL="postgres://user:pass@host:5432/sphericon?sslmode=require" \
      --from-literal=SPHERICON_JWT_SECRET="$(openssl rand -hex 32)" \
      --from-literal=SPHERICON_ENCRYPTION_KEY="<sphericon genkey>"
    ```
@@ -378,7 +378,7 @@ binary itself stays path-based.
 All state is in PostgreSQL, so a backup is a database backup plus your `SPHERICON_ENCRYPTION_KEY`:
 
 ```sh
-pg_dump --format=custom --file=sphericon-$(date +%F).dump "$DATABASE_URL"
+pg_dump --format=custom --file=sphericon-$(date +%F).dump "$SPHERICON_DATABASE_URL"
 ```
 
 To upgrade, back up, then run the one command for how you run the Instance: `sphericon upgrade`
@@ -405,7 +405,7 @@ through the release that backfills the ids first if you skipped it. After the up
 
 The chart lives in `charts/sphericon` and is published at every release as an OCI artifact,
 `oci://ghcr.io/getsphericon/charts/sphericon`, with the chart version equal to the app version.
-Create a Secret with `DATABASE_URL`, `SPHERICON_JWT_SECRET` and `SPHERICON_ENCRYPTION_KEY` first and
+Create a Secret with `SPHERICON_DATABASE_URL`, `SPHERICON_JWT_SECRET` and `SPHERICON_ENCRYPTION_KEY` first and
 pass its name as `existingSecret` (the chart refuses to render without it). To hand the secrets over as
 files instead (see [Secrets from files](/docs/configuration#secrets-from-files)), set `secretFiles.secretName` to the Secret
 and `secretFiles.keys` to the variables it holds: the chart mounts it at `/run/secrets/sphericon` and sets

@@ -23,11 +23,11 @@ credentials; they reveal only liveness and database reachability. See
 
 ## Secrets
 
-| Secret                     | Requirement                                                                                                                                         |
-| -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `SPHERICON_JWT_SECRET`     | Outside development the server refuses to start if it is empty, shorter than 32 characters, or a known placeholder. Use `openssl rand -hex 32`.     |
+| Secret                     | Requirement                                                                                                                                                        |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `SPHERICON_JWT_SECRET`     | Outside development the server refuses to start if it is empty, shorter than 32 characters, or a known placeholder. Use `openssl rand -hex 32`.                    |
 | `SPHERICON_ENCRYPTION_KEY` | A base64 Tink keyset (`sphericon genkey`). Boot fails without it. Back it up separately from the database ([Backup and restore](/docs/operations/backup#secrets)). |
-| `DATABASE_URL`             | Contains the database password. Keep it in a secret store, not in an image or a committed file.                                                     |
+| `SPHERICON_DATABASE_URL`   | Contains the database password. Keep it in a secret store, not in an image or a committed file.                                                                    |
 
 Supply secrets through your orchestrator's secret mechanism (a Kubernetes `Secret` referenced by
 the chart's `existingSecret`, a Docker secret, or your platform's equivalent). Do not copy
@@ -43,7 +43,7 @@ Rotate on a schedule and whenever someone with access leaves or a secret may hav
   [Rotating the encryption key](#rotating-the-encryption-key). Do not replace the keyset with a
   freshly generated one: stored provider credentials could no longer be decrypted and would have
   to be re-entered.
-- **Database password.** Change it on the server, update `DATABASE_URL`, and restart the
+- **Database password.** Change it on the server, update `SPHERICON_DATABASE_URL`, and restart the
   replicas.
 - **API tokens and the collect key.** Create a new one, switch your callers, then revoke the old
   one.

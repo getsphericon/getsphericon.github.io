@@ -96,7 +96,7 @@ a schedule (for example monthly) and after any change to the backup setup.
    ```sh
    docker run --rm -p 3000:3000 \
      -e SPHERICON_ENV=production \
-     -e DATABASE_URL="postgres://app@scratch.example.com:5432/sphericon_restore?sslmode=require" \
+     -e SPHERICON_DATABASE_URL="postgres://app@scratch.example.com:5432/sphericon_restore?sslmode=require" \
      -e SPHERICON_JWT_SECRET="$SPHERICON_JWT_SECRET" \
      -e SPHERICON_ENCRYPTION_KEY="$SPHERICON_ENCRYPTION_KEY" \
      -e SPHERICON_APP_URL="https://restore-drill.example.com" \

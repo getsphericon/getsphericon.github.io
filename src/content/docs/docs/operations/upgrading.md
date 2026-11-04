@@ -78,7 +78,7 @@ In order, it:
 
 Without `--restart` the command ends by printing the one step it leaves to you,
 `systemctl restart sphericon`, and its `migrate` runs in your shell, so the shell needs the
-service's environment (at least `DATABASE_URL` and `SPHERICON_JWT_SECRET`, and `SPHERICON_ENV=production`).
+service's environment (at least `SPHERICON_DATABASE_URL` and `SPHERICON_JWT_SECRET`, and `SPHERICON_ENV=production`).
 On systemd use `--restart` and the environment comes from the unit.
 
 The command replaces the file it runs from, so it needs write access to that directory. Only a
@@ -198,7 +198,7 @@ is replaced**: the old pods keep serving. Once the hook succeeds the Deployment 
 behind the readiness probe (`GET /readyz`) and the disruption budget. To see why a hook failed,
 read the logs of the release's `-migrate` Job.
 
-`--reuse-values` keeps your values, including `existingSecret` (the Secret with `DATABASE_URL`,
+`--reuse-values` keeps your values, including `existingSecret` (the Secret with `SPHERICON_DATABASE_URL`,
 `SPHERICON_JWT_SECRET` and `SPHERICON_ENCRYPTION_KEY`). A pinned `image.tag` is kept too, so either
 leave it unset (it follows the chart's app version) or set it in the same command
 (`--set image.tag=0.5.0`). Across a Major, run the command once for each release a
@@ -216,7 +216,7 @@ docker pull ghcr.io/getsphericon/sphericon:0.5.0
 
 docker run --rm \
   -e SPHERICON_ENV=production \
-  -e DATABASE_URL="postgres://app@db.example.com:5432/sphericon?sslmode=require" \
+  -e SPHERICON_DATABASE_URL="postgres://app@db.example.com:5432/sphericon?sslmode=require" \
   -e SPHERICON_JWT_SECRET="$SPHERICON_JWT_SECRET" \
   ghcr.io/getsphericon/sphericon:0.5.0 migrate
 
@@ -301,7 +301,7 @@ Migrations only go forward, so a rollback means returning to the pre-upgrade sta
 
 1. Stop every replica.
 2. Restore the pre-upgrade dump into an empty database (see the
-   [restore drill](/docs/operations/backup#restore-drill)) and point `DATABASE_URL` at it, or drop and
+   [restore drill](/docs/operations/backup#restore-drill)) and point `SPHERICON_DATABASE_URL` at it, or drop and
    recreate the database you are restoring over.
 3. Start the **previous** binary or image. Do not point it at the migrated database: after a Major
    it refuses, as [above](#refusals).
@@ -346,7 +346,7 @@ thing at a time, so a failure has one suspect.
 3. Upgrade in place with `pg_upgrade`, or dump from the old server and restore into a new
    server on the new major version (`pg_dump` then `pg_restore`). Managed services offer
    their own major-version upgrade.
-4. Stop Sphericon during the switch, repoint `DATABASE_URL` if the server changed, start it, and
+4. Stop Sphericon during the switch, repoint `SPHERICON_DATABASE_URL` if the server changed, start it, and
    check `GET /readyz`.
 5. Run `ANALYZE` on the new cluster: planner statistics are not always carried over.
 

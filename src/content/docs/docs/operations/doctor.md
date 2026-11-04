@@ -33,7 +33,7 @@ and nothing else, for a monitor or a deploy pipeline. `status` is `pass`, `warn`
 ## Secrets are never printed
 
 Every byte of output, text or JSON, passes through a filter that replaces the value of every
-secret with `[redacted]`: `DATABASE_URL` (and the password inside it), `SPHERICON_JWT_SECRET`,
+secret with `[redacted]`: `SPHERICON_DATABASE_URL` (and the password inside it), `SPHERICON_JWT_SECRET`,
 `SPHERICON_STAFF_JWT_SECRET`, `SPHERICON_ENCRYPTION_KEY`, `SPHERICON_SMTP_PASS`, the SES
 credentials, `SPHERICON_LICENSE_KEY`, `SPHERICON_ACCOUNT_LINK_SIGNING_KEY` and
 `SPHERICON_BOOTSTRAP_TOKEN`. An error from the database or the mail relay that echoes one is

@@ -21,7 +21,7 @@ one overriding an earlier: `.env`, `.env.<SPHERICON_ENV>`, `.env.local`, `.env.<
 
 | Variable                   | What it is                                                                                      |
 | -------------------------- | ----------------------------------------------------------------------------------------------- |
-| `DATABASE_URL`             | The PostgreSQL connection string.                                                               |
+| `SPHERICON_DATABASE_URL`   | The PostgreSQL connection string.                                                               |
 | `SPHERICON_JWT_SECRET`     | Signs session cookies. Generate it with `openssl rand -hex 32`.                                 |
 | `SPHERICON_ENCRYPTION_KEY` | Encrypts stored provider credentials. Generate it with `sphericon genkey`.                      |
 | `SPHERICON_APP_URL`        | The public `https://` origin of the Instance. Tracking and unsubscribe links are built from it. |
@@ -30,7 +30,7 @@ one overriding an earlier: `.env`, `.env.<SPHERICON_ENV>`, `.env.local`, `.env.<
 
 | Variable | Default | Rules | Secret | Description |
 | --- | --- | --- | --- | --- |
-| `DATABASE_URL` | — | required | yes | The PostgreSQL connection string, such as `postgres://user:pass@host:5432/db?sslmode=require`; `sslmode=verify-full` with `sslrootcert` also verifies the server's certificate. The job queue LISTENs for new jobs on a session of its own: behind PgBouncer, it must reach Postgres directly or a pool in session mode, never transaction mode. |
+| `SPHERICON_DATABASE_URL` | — | required | yes | The PostgreSQL connection string, such as `postgres://user:pass@host:5432/db?sslmode=require`; `sslmode=verify-full` with `sslrootcert` also verifies the server's certificate. The job queue LISTENs for new jobs on a session of its own: behind PgBouncer, it must reach Postgres directly or a pool in session mode, never transaction mode. |
 | `PORT` | `3000` |  |  | The port the public HTTP server listens on, on every interface. |
 | `SPHERICON_APP_URL` | `http://localhost:3000` |  |  | The public origin of the Instance, `https://` in production: sessions, mailed links and tracking and unsubscribe links are built on it, an `https://` origin makes the session cookie Secure, and its host is the Passkey relying party id (ADR 0052), so changing the host invalidates every registered Passkey. An Instance served on an IP address cannot use Passkeys. |
 | `SPHERICON_MCP_URL` | — |  |  | The public origin of a dedicated MCP host, such as `https://mcp.example.com`: the MCP resource is then served there while the OAuth issuer and consent screen stay on `SPHERICON_APP_URL`. Empty serves MCP on `SPHERICON_APP_URL`. |
@@ -101,6 +101,7 @@ one overriding an earlier: `.env`, `.env.<SPHERICON_ENV>`, `.env.local`, `.env.<
 | `SPHERICON_DNS_ADDR` | — |  |  | The `host:port` of a DNS server that verifies Sending domains and Join domains instead of the host's resolver, for a development stack that publishes its own records. Leave it empty in production. |
 | `SPHERICON_INTERNAL_ADDR` | — |  |  | The `host:port` of the opt-in internal listener: the edge's on-demand TLS `ask` and, with the `staff` license, the service endpoints of the Staff surface (ADR 0026, ADR 0038). Empty runs none. It must differ from `PORT` and `SPHERICON_METRICS_ADDR`. |
 | `SPHERICON_PRESETS_DIR` | — |  |  | A directory of custom Presets (ADR 0037): every `*.yaml` and `*.yml` file at its root loads beside the built-in ones at start, and a file that does not load, or reuses a built-in name, stops the start. Empty loads only the built-in Presets. |
+| `SPHERICON_TELEGRAM_BOT_API_URL` | `https://api.telegram.org` |  |  | The base URL of the Telegram Bot API every Workspace's Telegram bot is reached at: Telegram's own server by default, or a local `telegram-bot-api` server (https://github.com/tdlib/telegram-bot-api) that runs the Bot API on your own infrastructure, such as `http://telegram-bot-api:8081`. Calls go to `<url>/bot<token>/<method>`. |
 | `SPHERICON_TRACKING_CNAME_TARGET` | — |  |  | The edge host a Workspace's Tracking domain (e.g. `t.example.com`) is a CNAME to, such as `edge.example.com` (ADR 0038, ADR 0071). Empty turns Tracking domains off: the section is hidden on Settings, Tracking and no host is set or checked. |
 | `SPHERICON_TRACKING_HOST_HEADER` | — |  |  | The request header the edge sets to the customer's host, such as `X-Forwarded-Host` (ADR 0038), believed only from a peer inside `SPHERICON_TRACKING_EDGE_CIDRS`. Empty uses the connection's `Host`. Have the proxy of the Instance's own host drop this header. |
 | `SPHERICON_TRACKING_EDGE_CIDRS` | `127.0.0.0/8,::1/128` |  |  | Comma- or space-separated CIDRs the edge connects from: the only peers whose `SPHERICON_TRACKING_HOST_HEADER` is believed. A proxy on another machine must be listed. |
@@ -122,7 +123,7 @@ one overriding an earlier: `.env`, `.env.<SPHERICON_ENV>`, `.env.local`, `.env.<
 
 Docker and Kubernetes mount secrets as files. Each secret variable also accepts a `<NAME>_FILE` sibling (`SPHERICON_JWT_SECRET_FILE=/run/secrets/jwt`) whose value is the path of a file read at start; the trailing newline is trimmed. A value set directly wins and its file is never read; an unreadable or empty file stops the start, naming the `_FILE` variable. `sphericon doctor` redacts every secret value from what it prints. The secret variables:
 
-- `DATABASE_URL`
+- `SPHERICON_DATABASE_URL`
 - `SPHERICON_JWT_SECRET`
 - `SPHERICON_JWT_SECRET_SECONDARY`
 - `SPHERICON_STAFF_JWT_SECRET`
