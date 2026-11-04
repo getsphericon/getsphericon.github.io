@@ -113,9 +113,6 @@ already neutralises by design; these three are the ones still open for us:
   (`internal/jobs/worker.go` — `QueueBroadcasts: {MaxWorkers: 10}`); there is no throttle.
   Lean on **river**'s native rate/concurrency limiting, not a hand-rolled throttler. Builds
   on the sending domains (ADR 0010).
-- **Resource archiving** — archive (soft-hide) old Broadcasts / Automations / Segments so
-  busy workspaces stay navigable. No `archived_at`/soft-delete exists today; Mautic's clutter
-  complaint (no way to archive unused resources) applies to us too.
 - **Independently-scalable worker tier (process roles)** — deployment topology, _distinct_
   from scale-validation above (that is query cost at 1M contacts; this is throughput
   scaling). **Horizontal scaling already works today:** river distributes job _work_ across
