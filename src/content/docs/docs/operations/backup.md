@@ -10,7 +10,7 @@ back up, how, how to rehearse a restore, and what the instance does once it is r
 
 | Item                       | Where it lives                  | Why it matters                                                                                        |
 | -------------------------- | ------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| The PostgreSQL database    | Your database server            | Contacts, events, Outbound messages, automations, the job queue and the event outbox.                 |
+| The PostgreSQL database    | Your database server            | Contacts, events, Outbound messages, automations and the job queue, domain-event jobs included.       |
 | `SPHERICON_ENCRYPTION_KEY` | Your secret store / environment | Decrypts the provider credentials stored in the database. Without it a restored database cannot send. |
 | `SPHERICON_JWT_SECRET`     | Your secret store / environment | Signs session tokens and mailed links. Losing it signs every user out; it does not lose data.         |
 
@@ -122,10 +122,11 @@ three behaviours follow from the architecture:
   database, so jobs that were pending at the backup point are pending again, and jobs that
   finished after it are no longer recorded as finished. Workers pick up what the restored
   queue says is due.
-- **Domain events are redelivered at least once.** The event outbox is also in the database.
-  Consumers resume from their stored position, so anything published after that position is
-  delivered again. An Event is stored once per `source_id`, so redelivery does not duplicate
-  it.
+- **Domain events are handled again from the restored queue.** Each consumer of a domain event
+  has a job of its own in the job queue (the `events` queue), written in the same transaction as
+  the Event row. An event whose jobs were pending at the backup point is handled again; one
+  published after it is gone, with its Event row. An Event is stored once per `source_id`, so a
+  provider or client that sends it again after the restore does not duplicate it.
 - **Mail sent after the backup point can be sent again.** Each email Sphericon sends is recorded
   as an Outbound message before the provider is called, and the idempotency key that prevents
   duplicate sends lives in that same database row

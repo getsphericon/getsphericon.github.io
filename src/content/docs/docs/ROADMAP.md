@@ -26,7 +26,8 @@ ECRM that drip is — e-commerce is designed-for architecturally and built later
   (Liquid merge tags over email-ready HTML), copied-at-author-time for marketing [ADR 0003].
 - **Deliverability so far:** bounce/complaint ingestion (SES-over-SNS hook → Suppression),
   workspace analytics dashboard.
-- Infra: watermill domain-event bus (transactional outbox), river jobs — both with real handlers.
+- Infra: river jobs with real handlers; domain events reach each consumer as a river job of its
+  own, written in the producer's transaction (ADR 0101; ✅ replaced the watermill outbox).
   Three API surfaces (site/external/collect), scoped API tokens. SMTP/SES integrations
   (encrypted). **Multi-user workspaces** [ADR 0004]: a User reaches a Workspace through a
   Membership (owner / admin / member), with invitations and a members UI; site handlers are
@@ -116,20 +117,20 @@ already neutralises by design; these three are the ones still open for us:
 - **Independently-scalable worker tier (process roles)** — deployment topology, _distinct_
   from scale-validation above (that is query cost at 1M contacts; this is throughput
   scaling). **Horizontal scaling already works today:** river distributes job _work_ across
-  all clients via `SELECT … FOR UPDATE SKIP LOCKED` (leader only does maintenance), and the
-  watermill-sql event subscribers use **stable, role-named consumer groups** (`"persist"`,
-  `"automations"`, `"webhooks"`, `"suppression"` — `internal/events/subscriber.go`) with an
-  offset adapter, so N replicas compete per group — **no double enrollment / duplicate
-  webhook / duplicate send.** Verified, and it needs no Redis (the coordination lives in
-  Postgres — the same anti-Mautic simplicity). The _gap_ is that every replica is a full
-  stack (HTTP + events + jobs), so the **worker tier cannot be scaled independently of the
-  web tier** — a big broadcast forces more full binaries behind the LB. Fix is a **run-mode
-  split**, cheap because `App.RunEvents` / `App.RunJobs` / `App.Server` are already separable
-  methods (`internal/app/app.go`) and it mirrors the existing `migrate` subcommand:
-  - `serve` (default, all-in-one) — HTTP + events + jobs. **Keep this the default** — the
+  all clients via `SELECT … FOR UPDATE SKIP LOCKED` (leader only does maintenance), and since
+  ADR 0101 every domain-event consumer is a river job too (one per consumer per event, in the
+  `events` queue; ✅ done, the watermill-sql consumer groups are gone), so N replicas compete for
+  the same jobs — **no double enrollment / duplicate webhook / duplicate send.** It needs no
+  Redis (the coordination lives in Postgres — the same anti-Mautic simplicity). The _gap_ is
+  that every replica is a full stack (HTTP + jobs, domain events included), so the **worker
+  tier cannot be scaled independently of the web tier** — a big broadcast forces more full binaries behind the LB. Fix is a **run-mode
+  split**, cheap because the HTTP server and the job workers already start separately
+  (`internal/app/app.go`) and it mirrors the existing `migrate` subcommand:
+  - `serve` (default, all-in-one) — HTTP + jobs. **Keep this the default** — the
     single-binary + single-Postgres self-host story is a core positioning advantage; splitting
     is opt-in for scale, never required.
-  - `worker` — events + jobs, no HTTP; scale this deployment for send/automation throughput.
+  - `worker` — jobs (domain events included), no HTTP; scale this deployment for
+    send/automation throughput.
   - `web` — HTTP only, workers not started.
   - Also make river's per-queue `MaxWorkers` (hardcoded 5/10/5 in `internal/jobs/worker.go`)
     config-driven so a worker box can be sized.

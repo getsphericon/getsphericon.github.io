@@ -46,8 +46,8 @@ urgent request alert.
 **Check.**
 
 1. Which operation? `sum by (operation_id, http_response_status_code) (rate(ogen_server_request_count_total{operation_id=~"Collect.*"}[5m]))`.
-2. The collect path writes to the domain-event outbox in PostgreSQL, so look for database
-   trouble first: `/readyz`, [`SphericonDBPoolSaturated`](#sphericondbpoolsaturated),
+2. The collect path writes the Event row and its domain-event jobs in PostgreSQL, in the
+   request's transaction, so look for database trouble first: `/readyz`, [`SphericonDBPoolSaturated`](#sphericondbpoolsaturated),
    [`SphericonDBPoolWaits`](#sphericondbpoolwaits), disk full, a failover in progress.
 3. Read the error logs of the failing pods for the underlying error.
 
@@ -101,56 +101,21 @@ for 15 minutes. `/collect` is excluded because it should always be fast.
 **Fix.** Kill or fix the slow query, add a missing index, or scale the database. Adding
 replicas does not help if the database is the limit.
 
-## SphericonOutboxLagHigh
-
-**Means.** A domain-event consumer group is more than 5 minutes behind. The groups are
-`persist` (writes the Event rows that analytics and segments read), `automations` (enrolls
-contacts), `webhooks` (dispatches outgoing webhooks) and `suppression` (adds bounced and
-complaining addresses to the suppression list). The `consumer_group` label tells you which one.
-
-**Impact.** Lag in `suppression` delays blocking of hard-bouncing addresses, which hurts
-reputation. Lag in `persist` makes dashboards stale. The outbox is also only pruned below the
-slowest consumer's cursor, so a stuck group makes it grow.
-
-**Check.**
-
-1. Is only one group behind? That group's handler is failing or stuck. Look at
-   `SphericonEventHandlerErrors` for its handler and read the logs.
-2. Are all groups behind? The router is not running (process restarting, database trouble) or
-   the database is slow. Check [`SphericonDown`](#sphericondown) and the pool alerts.
-3. Lag drops by itself after a spike (a big import, an SES hook burst) once consumers catch up:
-   watch the trend before acting.
-
-**Fix.** A message that keeps failing is redelivered and holds its group back: fix the cause
-(a bug, a bad payload, an unreachable dependency) and ship a release; the group resumes from
-its cursor with no data loss. If a deploy introduced it, roll back.
-
-## SphericonEventHandlerErrors
-
-**Means.** More than 5% of messages handled by one event handler returned an error for 15
-minutes. The `handler` label is one of `persist_event`, `enroll_automations`,
-`dispatch_webhooks` or `update_suppression`.
-
-**Check.**
-
-1. The logs of the process around the failures, for the underlying error.
-2. `update_suppression` and `persist_event` fail mostly on database errors. `enroll_automations`
-   fails on a broken automation definition. `dispatch_webhooks` should not fail on a customer's
-   unreachable endpoint (delivery is a river job), so a failure there points at Sphericon itself.
-3. Correlate with [`SphericonOutboxLagHigh`](#sphericonoutboxlaghigh): failures that keep a message
-   from being acknowledged show up as growing lag for that handler's group.
-
-**Fix.** Fix the cause and deploy. Failed messages are redelivered and the handlers are written to
-tolerate redelivery, so there is nothing to replay by hand.
-
 ## SphericonJobQueueBacklog
 
-**Means.** In one river queue (`default`, `broadcasts` or `webhooks`) the oldest job that is
-ready to run has been waiting more than 15 minutes.
+**Means.** In one river queue (`default`, `broadcasts`, `webhooks`, `http_steps` or `events`) the
+oldest job that is ready to run has been waiting more than 15 minutes.
+
+The `events` queue carries the domain events: each consumer that wants an event (suppression,
+orders, automations, rules, the webhook fan-out and, on the Enterprise Edition, the Audit log and
+the erasures export) gets a job of its own there. A backlog in `events` delays all of them:
+bouncing and complaining addresses stay sendable, Automations and Rules react late and webhooks
+go out late. The Event rows themselves are written when the event is published, so dashboards and
+Segments are not behind.
 
 **Check.**
 
-1. Is it just load? A large broadcast legitimately queues many jobs. If
+1. Is it just load? A large broadcast or import legitimately queues many jobs. If
    `river_queue_depth` is high but falling, wait.
 2. Is anything being worked? `sum by (queue) (rate(river_work_count_total[5m]))`. Zero with a
    growing backlog means the workers are not running or are stuck.
@@ -176,12 +141,16 @@ sustained high ratio always needs a look.
 **Check.**
 
 1. Which kind? `topk(10, sum by (kind) (rate(river_work_count_total{status!="ok"}[15m])))`.
+   The domain-event consumers are the kinds that start with `event_` (`event_suppress`,
+   `event_order`, `event_automation`, `event_rule`, `event_webhook`, and `event_audit` and
+   `event_export_erasure` on the Enterprise Edition), all in the `events` queue. Each retries on
+   its own, so one failing consumer holds up neither the other consumers nor other events.
 2. Read the `river job errored` and `river job panicked` log lines for that `kind`; they carry
    the error, `attempt` and `max_attempts`.
 3. Common causes: the email provider rejecting sends (see
    [`SphericonEmailSendErrorsHigh`](#sphericonemailsenderrorshigh)), a customer's webhook endpoint
    down (the `webhooks` queue retries up to 10 times), DNS for sending-domain checks, or a bug.
-4. Jobs that used up their attempts are in state `discarded` and are kept for 14 days:
+4. Jobs that used up their attempts are in state `discarded` and are kept for 30 days:
 
    ```sql
    SELECT kind, count(*), max(finalized_at)
@@ -190,13 +159,19 @@ sustained high ratio always needs a look.
    ```
 
 **Fix.** Fix the cause. Failing webhook deliveries to one customer endpoint are that
-customer's problem; tell them. Discarded jobs are not retried automatically: after the fix,
-re-run the underlying action (for example, re-send the broadcast to the missed recipients).
+customer's problem; tell them. Discarded jobs are not retried automatically: after the fix, retry
+them from the job queue's UI (River UI) in the Staff console, at `/staff/jobs`. It is served to a
+signed-in Staff member, so it needs `SPHERICON_STAFF_JWT_SECRET` set (see the
+[configuration reference](/docs/configuration)) and a Staff member (see
+[First run](/docs/self-hosting#first-run)); without the secret `/staff` answers `404`. That is also how a domain
+event a consumer gave up on is handled again; there is no separate replay command. For work that is
+no longer worth retrying, re-run the underlying action instead (for example, re-send the broadcast
+to the missed recipients).
 
 ## SphericonDBPoolSaturated
 
 **Means.** One connection pool has been at or above 90% of its maximum for 10 minutes. `pool`
-is `sql` (requests, ent, event consumers, job workers; `SPHERICON_DB_MAX_OPEN_CONNS`, default 15) or
+is `sql` (requests, ent, job workers; `SPHERICON_DB_MAX_OPEN_CONNS`, default 15) or
 `river` (the job queue's own pool; `SPHERICON_RIVER_DB_MAX_CONNS`, default 25).
 
 **Check.**
@@ -251,8 +226,9 @@ placed under review.
    Workspace dashboard ([ADR 0011](https://github.com/getsphericon/sphericon/blob/main/docs/adr/0011-deliverability-rate-metrics.md)).
 2. A recent import of an old or purchased list is the usual cause. Permanent bounces are
    added to the suppression list automatically, but the damage is done by the first send.
-3. Confirm the `suppression` consumer is keeping up ([`SphericonOutboxLagHigh`](#sphericonoutboxlaghigh));
-   if it lags, bouncing addresses stay sendable.
+3. Confirm the suppression consumer is keeping up: its jobs run in the `events` queue
+   ([`SphericonJobQueueBacklog`](#sphericonjobqueuebacklog)); if it lags, bouncing addresses stay
+   sendable.
 
 **Fix.** Pause the offending broadcast, clean the list, and re-send only to verified
 addresses. Talk to the Workspace owner if the source of the list is the problem.
@@ -273,5 +249,5 @@ reviews accounts above roughly this rate, and mailbox providers start filtering.
 3. Is the list opted in? Mail to people who never asked draws complaints.
 
 **Fix.** Stop the offending broadcast now. Complaining addresses are suppressed automatically;
-confirm that the `suppression` consumer is current. Fix the source of the audience or the
+confirm that the `events` queue is current ([`SphericonJobQueueBacklog`](#sphericonjobqueuebacklog)). Fix the source of the audience or the
 unsubscribe flow before sending again, and respond to the provider if they open a review.
