@@ -60,28 +60,26 @@ The surface is not a label of its own. Tell them apart by `operation_id`: `Colle
 `http_response_status_code=~"5.."`. `ogen_server_errors_count_total` counts requests that ended
 in an error of any class, 4xx included, so use the request counter for 5xx ratios.
 
-### Domain events (outbox)
-
-| Metric                                 | Type      | Labels             | Meaning                                                                           |
-| -------------------------------------- | --------- | ------------------ | --------------------------------------------------------------------------------- |
-| `outbox_lag_seconds`                   | gauge     | `consumer_group`   | Age of the oldest outbox row the group has not processed yet; `0` when caught up. |
-| `watermill_messages_processed_total`   | counter   | `handler`, `error` | Messages handled, by handler and whether it returned an error.                    |
-| `watermill_handler_duration_seconds_*` | histogram | `handler`, `error` | Handler run time.                                                                 |
-
-Consumer groups are `persist`, `automations`, `webhooks` and `suppression`; their handlers are
-`persist_event`, `enroll_automations`, `dispatch_webhooks` and `update_suppression`. The lag
-gauge runs one query per scrape.
-
 ### Background jobs (river)
 
 | Metric                                     | Type      | Labels                                    | Meaning                                                     |
 | ------------------------------------------ | --------- | ----------------------------------------- | ----------------------------------------------------------- |
-| `river_queue_depth`                        | gauge     | `queue`                                   | Jobs ready to run now. A queue with none reports no sample. |
-| `river_queue_oldest_available_age_seconds` | gauge     | `queue`                                   | Age of the oldest ready job.                                |
+| `river_queue_depth`                        | gauge     | `queue`                                   | Jobs ready to run now; `0` when none is.                    |
+| `river_queue_oldest_available_age_seconds` | gauge     | `queue`                                   | Age of the oldest ready job; `0` when none is.              |
 | `river_work_count_total`                   | counter   | `queue`, `kind`, `status`, `attempt`, ... | Job attempts; `status` is `ok`, `error` or `panic`.         |
 | `river_work_duration_histogram_seconds_*`  | histogram | same                                      | Attempt run time.                                           |
 
-Queues are `default`, `broadcasts` and `webhooks`. Snoozed jobs count as `ok`.
+Queues are `default`, `broadcasts`, `webhooks`, `http_steps` and `events`. Every queue reports both
+gauges, `0` when it is idle, so an alert sees a queue recover. The two gauges run one query per
+scrape. Snoozed jobs count as `ok`.
+
+Domain events are jobs too: each consumer that wants an event gets a job of its own in the
+`events` queue, with a kind that starts with `event_` (`event_suppress`, `event_order`,
+`event_automation`, `event_rule`, `event_webhook`, and `event_audit` and `event_export_erasure`
+on the Enterprise Edition). Their lag is `river_queue_oldest_available_age_seconds{queue="events"}`
+and their failures are `river_work_count_total{kind=~"event_.*"}`; there is no metric of their own.
+A job's trace links to the span that inserted it, so a trace leads from the request that published
+an event to the work of its consumers.
 
 ### Database pools
 
@@ -93,7 +91,7 @@ Queues are `default`, `broadcasts` and `webhooks`. Snoozed jobs count as `ok`.
 | `db_pool_max`                 | gauge | `pool` | Configured maximum (`SPHERICON_DB_MAX_OPEN_CONNS`, `SPHERICON_RIVER_DB_MAX_CONNS`).                                                                                            |
 | `db_pool_wait_count`          | gauge | `pool` | Cumulative requests that waited for a connection (`sql.DBStats.WaitCount`); use `increase()`.                                                                             |
 
-`pool` is `sql` (requests, ent, event consumers, job workers) or `river` (the job queue's own fetch,
+`pool` is `sql` (requests, ent, job workers) or `river` (the job queue's own fetch,
 completion and leader election). Both are `database/sql` pools, so their counters mean the same.
 
 ### Email
@@ -120,13 +118,13 @@ These are **proposed** starting points, not commitments. Nothing in the product 
 adopt, tighten or drop them to match what you promise your users. Objectives are measured over
 30 days, and every query below is plain PromQL over the metrics above.
 
-| SLI                     | Proposed SLO                     | Measured as                                            |
-| ----------------------- | -------------------------------- | ------------------------------------------------------ |
-| `/collect` availability | 99.9% of requests not 5xx        | `1 - 5xx / all` for `operation_id=~"Collect.*"`        |
-| `/site` 5xx ratio       | below 1%                         | `5xx / all` for `operation_id=~"Site.*"`               |
-| `/api` 5xx ratio        | below 1%                         | `5xx / all` for the remaining operations               |
-| Outbox consumer lag     | under 5 minutes, 99% of the time | share of time `max(outbox_lag_seconds)` is at most 300 |
-| Discarded jobs          | below 1% of jobs                 | no direct metric today; see below                      |
+| SLI                     | Proposed SLO                     | Measured as                                                                    |
+| ----------------------- | -------------------------------- | ------------------------------------------------------------------------------ |
+| `/collect` availability | 99.9% of requests not 5xx        | `1 - 5xx / all` for `operation_id=~"Collect.*"`                                |
+| `/site` 5xx ratio       | below 1%                         | `5xx / all` for `operation_id=~"Site.*"`                                       |
+| `/api` 5xx ratio        | below 1%                         | `5xx / all` for the remaining operations                                       |
+| Domain-event lag        | under 5 minutes, 99% of the time | share of time the `events` queue's oldest ready job is at most 300 seconds old |
+| Discarded jobs          | below 1% of jobs                 | no direct metric today; see below                                              |
 
 `/collect` gets the strictest objective because a failed request is an event that is lost,
 while a failed `/site` request is retried by a person. Request latency and deliverability
@@ -140,8 +138,8 @@ on your traffic and your sending reputation.
   / sum(increase(ogen_server_request_count_total{operation_id=~"Collect.*"}[30d]))
 )
 
-# Outbox lag SLI: share of the last 30 days with every consumer within 5 minutes
-avg_over_time((max(outbox_lag_seconds) <= bool 300)[30d:1m])
+# Domain-event lag SLI: share of the last 30 days with no event job waiting over 5 minutes
+avg_over_time((max(river_queue_oldest_available_age_seconds{queue="events"}) <= bool 300)[30d:1m])
 
 # Job failure ratio (upper bound for the discarded-job ratio)
 sum(increase(river_work_count_total{status!="ok"}[30d])) / sum(increase(river_work_count_total[30d]))
@@ -149,7 +147,7 @@ sum(increase(river_work_count_total{status!="ok"}[30d])) / sum(increase(river_wo
 
 River does not export a discarded-job counter. A job is discarded after its last attempt fails,
 so the failed-attempt ratio above is an upper bound (retried attempts count too). The exact
-figure is the number of `discarded` rows in `river_job` (kept 14 days) and the
+figure is the number of `discarded` rows in `river_job` (kept 30 days) and the
 `river job errored` log lines with `attempt` equal to `max_attempts`. The example alerts watch
 the failure ratio and the queue age instead of a discard ratio for this reason.
 
@@ -174,8 +172,6 @@ the chart manage them (`metrics.prometheusRule.enabled=true`; set
 | `SphericonSiteErrorRatioHigh`     | warning  | `/site` 5xx ratio above 5% for 10 minutes.                |
 | `SphericonApiErrorRatioHigh`      | warning  | `/api` 5xx ratio above 5% for 10 minutes.                 |
 | `SphericonRequestLatencyHigh`     | warning  | `/site` and `/api` p95 above 2 seconds for 15 minutes.    |
-| `SphericonOutboxLagHigh`          | warning  | A consumer group is over 5 minutes behind for 10 minutes. |
-| `SphericonEventHandlerErrors`     | warning  | A handler fails over 5% of messages for 15 minutes.       |
 | `SphericonJobQueueBacklog`        | warning  | A ready job has waited over 15 minutes.                   |
 | `SphericonJobFailureRatioHigh`    | warning  | Over 20% of job attempts fail for 30 minutes.             |
 | `SphericonDBPoolSaturated`        | warning  | A pool is at 90% of its maximum for 10 minutes.           |

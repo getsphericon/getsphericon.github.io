@@ -28,21 +28,25 @@ Sphericon is one process (the Go binary or Docker image) plus **one PostgreSQL d
 no Redis, no object storage and no separate worker. That shapes everything below:
 
 - **PostgreSQL holds all state.** Contacts, events, Outbound messages, provider credentials
-  (encrypted), the background job queue (river) and the domain-event outbox (watermill) all
-  live in the same database. A single database backup therefore captures the whole instance.
+  (encrypted) and the background job queue (river), which also carries the domain events to their
+  consumers, all live in the same database. A single database backup therefore captures the whole
+  instance.
 - **The process is stateless.** Replacing the binary or the container loses nothing. Two things
   outside the database must be kept safe, because the database alone cannot recover them:
   `SPHERICON_ENCRYPTION_KEY` and `SPHERICON_JWT_SECRET` (see [Backup and restore](/docs/operations/backup#secrets)).
-- **Background work runs inside the same process.** Job workers and event consumers start with
-  the server, so scaling out means running more replicas of the same image against the same
-  database.
+- **Background work runs inside the same process.** The job workers, the domain-event consumers
+  among them, start with the server, so scaling out means running more replicas of the same image
+  against the same database. A domain event reaches each consumer that wants it as a job of its own
+  in the `events` queue: a lagging consumer shows as the age of the oldest available job of that
+  queue ([Monitoring](/docs/operations/monitoring#background-jobs-river)), and a job that failed
+  for good is retried from the job queue's UI ([Runbook](/docs/operations/runbook#sphericonjobfailureratiohigh)).
 
 ## Sizing
 
 Treat these as a way of reasoning, not as benchmarks. Measure on your own traffic.
 
 - **The database is the capacity limit.** Every replica opens its own connection pools: a
-  `database/sql` pool for requests and event consumers, and a separate pool for the job queue.
+  `database/sql` pool for requests and the job workers, and a separate pool for the job queue.
   Add up the connections of all replicas and keep the total below the server's
   `max_connections`, leaving room for backups, `psql` sessions and monitoring. The formula and
   the defaults are in [Scaling and tuning](/docs/operations/scaling#connection-budget); a transaction-mode
@@ -53,8 +57,7 @@ Treat these as a way of reasoning, not as benchmarks. Measure on your own traffi
 - **Memory and CPU are modest.** The process serves the API, the SPA and the tracker, and
   renders email. Sending volume is bounded by your provider (SMTP or Amazon SES) and its rate
   limits, not by the process.
-- **Disk grows with events.** The `events` table and the domain-event outbox are the fastest
-  growing data. Size the volume for your event rate and plan for growth; the backup size
+- **Disk grows with events.** The `events` table is the fastest growing data. Size the volume for your event rate and plan for growth; the backup size
   follows the same curve.
 - **Prefer a managed PostgreSQL** (point-in-time recovery, automated failover, storage
   growth) over a database you patch yourself, if your environment offers one.
