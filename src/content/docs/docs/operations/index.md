@@ -30,7 +30,8 @@ no Redis, no object storage and no separate worker. That shapes everything below
 - **PostgreSQL holds all state.** Contacts, events, Outbound messages, provider credentials
   (encrypted) and the background job queue (river), which also carries the domain events to their
   consumers, all live in the same database. A single database backup therefore captures the whole
-  instance.
+  instance. The event journal also lives here: publication metadata and explicitly retained
+  anonymous report inputs are independent of the job queue's cleanup.
 - **The process is stateless.** Replacing the binary or the container loses nothing. Two things
   outside the database must be kept safe, because the database alone cannot recover them:
   `SPHERICON_ENCRYPTION_KEY` and `SPHERICON_JWT_SECRET` (see [Backup and restore](/docs/operations/backup#secrets)).
@@ -58,7 +59,9 @@ Treat these as a way of reasoning, not as benchmarks. Measure on your own traffi
   renders email. Sending volume is bounded by your provider (SMTP or Amazon SES) and its rate
   limits, not by the process.
 - **Disk grows with events.** The `events` table is the fastest growing data. Size the volume for your event rate and plan for growth; the backup size
-  follows the same curve.
+  follows the same curve. The event journal retains publication metadata and allowed anonymous
+  report inputs without automatic expiry; include it in storage and backup capacity. Event-log
+  retention does not prune the journal. See [Report replay](/docs/operations/runbook#reapply-retained-report-measurements).
 - **Prefer a managed PostgreSQL** (point-in-time recovery, automated failover, storage
   growth) over a database you patch yourself, if your environment offers one.
 

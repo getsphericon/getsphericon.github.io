@@ -107,11 +107,12 @@ replicas does not help if the database is the limit.
 oldest job that is ready to run has been waiting more than 15 minutes.
 
 The `events` queue carries the domain events: each consumer that wants an event (suppression,
-orders, automations, rules, the webhook fan-out and, on the Enterprise Edition, the Audit log and
+orders, automations, rules, report projections, Notices, the webhook fan-out and, on the Enterprise Edition, the Audit log and
 the erasures export) gets a job of its own there. A backlog in `events` delays all of them:
 bouncing and complaining addresses stay sendable, Automations and Rules react late and webhooks
-go out late. The Event rows themselves are written when the event is published, so dashboards and
-Segments are not behind.
+go out late. The Event rows themselves are written when the event is published, so Segments and
+Event-based evaluations see them immediately. Message engagement and email delivery stamps and
+Broadcast unsubscribe attribution follow their report jobs and may lag.
 
 **Check.**
 
@@ -142,9 +143,11 @@ sustained high ratio always needs a look.
 
 1. Which kind? `topk(10, sum by (kind) (rate(river_work_count_total{status!="ok"}[15m])))`.
    The domain-event consumers are the kinds that start with `event_` (`event_suppress`,
-   `event_order`, `event_automation`, `event_rule`, `event_webhook`, and `event_audit` and
+   `event_order`, `event_message_observation`, `event_broadcast_unsubscribe`, `event_notice`,
+   `event_webhook`, and `event_audit` and
    `event_export_erasure` on the Enterprise Edition), all in the `events` queue. Each retries on
    its own, so one failing consumer holds up neither the other consumers nor other events.
+   Automation and Rule evaluations use `automation_evaluate_trigger` and `rule_evaluate_event`.
 2. Read the `river job errored` and `river job panicked` log lines for that `kind`; they carry
    the error, `attempt` and `max_attempts`.
 3. Common causes: the email provider rejecting sends (see
@@ -164,9 +167,45 @@ them from the job queue's UI (River UI) in the Staff console, at `/staff/jobs`. 
 signed-in Staff member, so it needs `SPHERICON_STAFF_JWT_SECRET` set (see the
 [configuration reference](/docs/configuration)) and a Staff member (see
 [First run](/docs/self-hosting#first-run)); without the secret `/staff` answers `404`. That is also how a domain
-event a consumer gave up on is handled again; there is no separate replay command. For work that is
+event a consumer gave up on is handled again. For work that is
 no longer worth retrying, re-run the underlying action instead (for example, re-send the broadcast
 to the missed recipients).
+
+### Reapply retained report measurements
+
+When the original jobs have already been cleaned up, the event journal retains the anonymous
+inputs of two report consumers: `event_message_observation` (human engagement and email delivery
+stamps) and `event_broadcast_unsubscribe` (received-message opt-out attribution). Preview a bounded
+interval first, using its **recording** time:
+
+```sh
+sphericon events replay --workspace aB3dE6gH --consumer event_message_observation \
+  --from 2026-11-08T00:00:00Z --before 2026-11-08T01:00:00Z --dry-run
+```
+
+The output is `matched N; enqueued 0`. To queue the selected report's normal jobs, repeat the
+command without `--dry-run`. The server's job runner processes them through the `events` queue;
+the command itself starts no worker. A repeated command safely reapplies the same measurements.
+Occurrence timestamps stay those of the accepted measurements, regardless of replay time or order.
+For each report stamp, both consumers keep the earliest accepted observation; an earlier fact can
+move a stamp earlier without counting the message or recipient twice.
+
+`--from` is inclusive and `--before` exclusive. The default and maximum `--limit` is 1000 entries;
+a larger selection is refused in full, so narrow the interval. Unsupported consumers or input
+versions queue nothing. A Workspace pending deletion or already erased cannot be replayed.
+
+Replay is not publication: it runs only the selected report consumer, without sending mail,
+running Rules or Automations, delivering Webhooks or reapplying consent transitions. It does not
+clear an existing projection or move an earliest timestamp forward. It repairs missing report
+applications, not arbitrary incorrect report state. Other failed consumers still use River UI.
+
+The journal starts with this version; earlier events are not reconstructed from Event projections.
+It records metadata for every accepted fact, but stores only explicitly allowed anonymous replay
+inputs, never the original personal envelope or an Invitation token. Metadata alone cannot replay
+an arbitrary future consumer. Contact Erasure leaves accepted anonymous report inputs intact;
+Workspace erasure removes its journal. The journal has no automatic expiry and consumes database
+and backup space independently of Event retention. A replay sees one query snapshot; concurrent
+publications retain their normal live jobs, with no cursor or commit-order guarantee.
 
 ## SphericonDBPoolSaturated
 
