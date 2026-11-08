@@ -127,6 +127,11 @@ three behaviours follow from the architecture:
   the Event row. An event whose jobs were pending at the backup point is handled again; one
   published after it is gone, with its Event row. An Event is stored once per `source_id`, so a
   provider or client that sends it again after the restore does not duplicate it.
+- **The event journal is restored at the same point.** Its metadata and explicitly retained
+  anonymous report inputs are in PostgreSQL too. If a report needs reapplication after restore,
+  use [report replay](/docs/operations/runbook#reapply-retained-report-measurements) for the retained
+  interval and selected consumer. This does not recover facts published after the backup point
+  or replay mail, sends and other external actions.
 - **Mail sent after the backup point can be sent again.** Each email Sphericon sends is recorded
   as an Outbound message before the provider is called, and the idempotency key that prevents
   duplicate sends lives in that same database row
