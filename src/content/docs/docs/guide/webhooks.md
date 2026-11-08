@@ -37,17 +37,19 @@ recorded in the Audit log.
 
 ## Events
 
-| Event                 | When                                                |
-| --------------------- | --------------------------------------------------- |
-| `contact.created`     | A new contact is created.                           |
-| `email.sent`          | A message was handed to the transport.              |
-| `email.opened`        | A recipient opened a message.                       |
-| `email.clicked`       | A recipient clicked a tracked link.                 |
-| `email.unsubscribed`  | A recipient unsubscribed.                           |
-| `email.bounced`       | A message hard-bounced.                             |
-| `email.complained`    | A recipient reported a message as spam.             |
-| `marketing.confirmed` | A contact confirmed their double opt-in.            |
-| _your own actions_    | Every event you record, under the action name used. |
+| Event                   | When                                                |
+| ----------------------- | --------------------------------------------------- |
+| `contact.created`       | A new contact is created.                           |
+| `email.sent`            | A message was handed to the transport.              |
+| `email.opened`          | A recipient opened a message.                       |
+| `email.clicked`         | A recipient clicked a tracked link.                 |
+| `email.unsubscribed`    | A recipient unsubscribed.                           |
+| `sms.unsubscribed`      | A contact's number stopped receiving texts.         |
+| `telegram.unsubscribed` | A contact stopped Telegram messages.                |
+| `email.bounced`         | A message hard-bounced.                             |
+| `email.complained`      | A recipient reported a message as spam.             |
+| `marketing.confirmed`   | A contact confirmed their double opt-in.            |
+| _your own actions_      | Every event you record, under the action name used. |
 
 Events you send through `/api/events` or the tracker are delivered under their own action name,
 for example `page_view` or `signed_up`, so an endpoint can subscribe to exactly the ones it needs.
