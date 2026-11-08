@@ -171,6 +171,32 @@ event a consumer gave up on is handled again. For work that is
 no longer worth retrying, re-run the underlying action instead (for example, re-send the broadcast
 to the missed recipients).
 
+### Inspect the event journal
+
+Inspect publication metadata for one Workspace, using its public id:
+
+```sh
+sphericon events list --workspace aB3dE6gH --name email.opened \
+  --from 2026-11-08T00:00:00Z --before 2026-11-08T01:00:00Z --limit 100
+```
+
+Use `--instance` instead of `--workspace` for account and other Instance facts. These scopes
+are separate: `--instance` never includes Workspace facts. One scope is required. Optional
+`--name` and `--event-id` filters match exactly and combine with the time bounds. `--from` is
+inclusive, `--before` exclusive, and both use the journal's **recording** time in RFC3339 format.
+Either bound may be omitted.
+
+The command writes JSON with `entries` and `truncated`. Each entry contains `eventId`, `name`,
+`version`, `occurredAt`, `recordedAt` and `retainedConsumers`. It shows no original envelope,
+personal payload or retained job arguments. Consumer names describe the inputs stored with that
+publication, not whether a handler is currently enabled. An empty result is
+`{"entries":[],"truncated":false}`.
+
+Entries are newest recorded time first, with insertion order breaking ties. The default limit is
+100 and the maximum 1000. If `truncated` is true, narrow the filters or increase the limit. This is
+a bounded snapshot, not a journal cursor or a guarantee of publication commit order. Inspection
+queues no jobs. A Workspace pending deletion remains inspectable until erasure removes its history.
+
 ### Reapply retained report measurements
 
 When the original jobs have already been cleaned up, the event journal retains the anonymous
