@@ -14,7 +14,7 @@ docker run --rm --env-file .env ghcr.io/getsphericon/sphericon doctor
 ```text
 [ ok ] configuration: the configuration loads
 [ ok ] database: schema Major 2, this binary Major 2
-[ ok ] postgres version: PostgreSQL 17 (supported: 14 to 18)
+[ ok ] postgres version: PostgreSQL 17 (supported: 16 to 18)
 [FAIL] system mail: cannot send through SMTP smtp.example.com:587: 535 authentication failed
        fix: Check SPHERICON_SMTP_HOST, SPHERICON_SMTP_PORT, SPHERICON_SMTP_USER and SPHERICON_SMTP_PASS, ...
 [warn] app url in sent mail: 12 of the last 200 sent messages carry links on https://old.example.com, ...
@@ -45,7 +45,7 @@ filtered too. A value shorter than four characters is left alone.
 | ---------------------- | ------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
 | `configuration`        | The configuration loads like the server's.                                                                    | Fails, naming the variable, when it does not; the other checks are not run.                                         |
 | `database`             | The database answers and this binary can run on its schema Major (what `migrate --status` reads).             | Fails when unreachable or when the start would be refused; warns with migrations pending.                           |
-| `postgres version`     | The server's major is between 14 and 18 (the newest the test suite runs).                                     | Fails below 14; warns above 18.                                                                                     |
+| `postgres version`     | The server's major is between 16 and 18 (the newest the test suite runs).                                     | Fails below 16; warns above 18.                                                                                     |
 | `system mail`          | SMTP: the relay accepts a connection (STARTTLS when offered) and the login. SES: the region and keys are set. | Fails when the relay is unreachable or refuses the login, or when no mail is set up while email verification is on. |
 | `app url`              | `SPHERICON_APP_URL` is an origin: `http(s)://host[:port]`, no path, query or credentials.                     | Fails otherwise.                                                                                                    |
 | `app url https`        | The origin is `https`.                                                                                        | Fails on `http` for a public host; warns for `localhost` and development.                                           |

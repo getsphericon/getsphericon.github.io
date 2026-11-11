@@ -11,7 +11,7 @@ and no separate worker.
 You need:
 
 - A server or cluster that runs Docker, a plain binary or Kubernetes.
-- **PostgreSQL 14 to 18** (the test suite runs on 18). `sphericon doctor` checks it.
+- **PostgreSQL 16 to 18** (the test suite runs on 18). `sphericon doctor` checks it.
 - A domain with HTTPS for the public address, such as `https://mail.example.com`.
 - A mail provider: any SMTP server, or an SES-compatible service (Amazon SES, Yandex Cloud Postbox and others).
 
