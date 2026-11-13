@@ -123,7 +123,8 @@ Broadcast unsubscribe attribution follow their report jobs and may lag.
 3. Are the jobs failing and retrying? See
    [`SphericonJobFailureRatioHigh`](#sphericonjobfailureratiohigh).
 4. The queue fetches and completes jobs through its own `river` pool, and the workers do their work
-   through the `sql` pool: check `db_pool_in_use` of both against `db_pool_max`
+   through the `sql` pool: check `db_sql_connection_open{status="inuse"}` of both against
+   `db_sql_connection_max_open`
    ([`SphericonDBPoolSaturated`](#sphericondbpoolsaturated)).
 5. Check that the river schema is applied. It is created by `sphericon migrate`; an instance that
    skipped migration has no job tables and the job metrics and workers fail.
@@ -254,11 +255,12 @@ exceed `SPHERICON_DB_MAX_OPEN_CONNS`.
 ## SphericonDBPoolWaits
 
 **Means.** More than 100 times in 15 minutes a request or worker had to wait for a free
-connection (`db_pool_wait_count`, either pool). Unlike saturation this catches short, repeated
+connection (`db_sql_connection_wait_total`, either pool). Unlike saturation this catches short, repeated
 stalls.
 
 **Check and fix.** The same as [`SphericonDBPoolSaturated`](#sphericondbpoolsaturated). Waiting
-that continues while `db_pool_in_use` is well below `db_pool_max` points at slow connection
+that continues while `db_sql_connection_open{status="inuse"}` is well below
+`db_sql_connection_max_open` points at slow connection
 establishment (network, TLS, a pooler) instead of a too-small pool.
 
 ## SphericonEmailSendErrorsHigh
