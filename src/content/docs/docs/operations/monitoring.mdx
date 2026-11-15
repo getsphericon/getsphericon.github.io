@@ -83,16 +83,19 @@ an event to the work of its consumers.
 
 ### Database pools
 
-| Metric                        | Type  | Labels | Meaning                                                                                                                                                                   |
-| ----------------------------- | ----- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `db_pool_open`                | gauge | `pool` | Connections open (in use plus idle).                                                                                                                                      |
-| `db_pool_in_use`              | gauge | `pool` | Connections in use.                                                                                                                                                       |
-| `db_pool_idle`                | gauge | `pool` | Idle connections.                                                                                                                                                         |
-| `db_pool_max`                 | gauge | `pool` | Configured maximum (`SPHERICON_DB_MAX_OPEN_CONNS`, `SPHERICON_RIVER_DB_MAX_CONNS`).                                                                                            |
-| `db_pool_wait_count`          | gauge | `pool` | Cumulative requests that waited for a connection (`sql.DBStats.WaitCount`); use `increase()`.                                                                             |
+| Metric                                               | Type    | Labels           | Meaning                                                                             |
+| ---------------------------------------------------- | ------- | ---------------- | ----------------------------------------------------------------------------------- |
+| `db_sql_connection_open`                             | gauge   | `pool`, `status` | Connections open: `status` is `inuse` or `idle`.                                    |
+| `db_sql_connection_max_open`                         | gauge   | `pool`           | Configured maximum (`SPHERICON_DB_MAX_OPEN_CONNS`, `SPHERICON_RIVER_DB_MAX_CONNS`). |
+| `db_sql_connection_wait_total`                       | counter | `pool`           | Requests that waited for a free connection (`sql.DBStats.WaitCount`).               |
+| `db_sql_connection_wait_duration_milliseconds_total` | counter | `pool`           | Time spent waiting for a free connection.                                           |
+| `db_sql_connection_closed_max_idle_total`            | counter | `pool`           | Connections closed because of the idle limit (`SPHERICON_DB_MAX_IDLE_CONNS`).       |
+| `db_sql_connection_closed_max_idle_time_total`       | counter | `pool`           | Connections closed because they stayed idle too long.                               |
+| `db_sql_connection_closed_max_lifetime_total`        | counter | `pool`           | Connections closed because they reached their maximum lifetime.                     |
 
 `pool` is `sql` (requests, ent, job workers) or `river` (the job queue's own fetch,
-completion and leader election). Both are `database/sql` pools, so their counters mean the same.
+completion and leader election). Both are `database/sql` pools whose statistics are exported by
+[otelsql](https://github.com/XSAM/otelsql), so their metrics mean the same.
 
 ### Email
 
