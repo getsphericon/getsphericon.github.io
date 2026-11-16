@@ -15,6 +15,12 @@ send is planned. Subjects and bodies support [Liquid](https://shopify.github.io/
 Tracking (an open pixel, click rewriting and the unsubscribe footer) is layered on after
 rendering, and a plain-text part is generated for you.
 
+A render is bounded, so one template cannot slow down sending for everyone: at most 5,000 loop
+iterations, assigns and captures together, values of at most 256 KiB of text and 1,000 items, at most
+1 MiB of output, and ranges written as two numbers at most 1,000 apart (`(1..10)`, not `(1..n)`). A
+message that goes past a bound is not sent, and the error names the bound; a template that reaches
+one with its sample data is refused when it is saved.
+
 For marketing sends the template content is **copied** into the broadcast or automation step when
 you author it, so editing a template later never rewrites mail that is already queued.
 Transactional sends do the opposite and bind the template **by reference**, so your app can
