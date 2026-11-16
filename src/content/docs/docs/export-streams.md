@@ -100,7 +100,7 @@ own copy the same way to find the rows (`lower(hex(SHA256(lower(email))))` in Cl
   Events by Contact and Visitor. Use the hashes on Contacts and Outbound messages.
 
 Erasure rows are kept for the instance's Event retention window
-(`SPHERICON_EVENTS_RETENTION_DAYS`, 400 days by default), and for good when retention is off.
+(`SPHERICON_EVENTS_RETENTION`, 400 days by default), and for good when retention is off.
 Deletion by retention is not announced: your copy follows your own retention. Apply the erasures
 after loading the other streams, on every run: deleting twice is harmless.
 

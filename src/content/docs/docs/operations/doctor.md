@@ -2,7 +2,7 @@
 title: "Diagnosing an Instance with `sphericon doctor`"
 ---
 
-`sphericon doctor` reads the same configuration as the server (the environment and `.env` files)
+`sphericon doctor` reads the same configuration as the server (the process environment)
 and checks an Instance from the outside, so you can find what is wrong without asking for help.
 Each failed check prints the fix under it. It changes nothing and sends no mail.
 
