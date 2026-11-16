@@ -315,6 +315,13 @@ server {
 
 Do not expose `SPHERICON_METRICS_ADDR` through the proxy.
 
+Sphericon reads a client's address (for the rate limits and the proof kept with a consent) from
+`X-Forwarded-For` only when the connection comes from a trusted proxy,
+`SPHERICON_TRUSTED_PROXY_CIDRS`: loopback and the private networks by default, so a proxy on the same
+host, in a Docker network or in a cluster needs nothing. A proxy that connects from a public address
+must be listed there, or every client looks like the proxy. A client that reaches port 3000 directly is
+never believed about its address.
+
 ### Tracking domains
 
 A workspace can serve its mail's links and its tracker on a host of its own, such as `t.example.com`
