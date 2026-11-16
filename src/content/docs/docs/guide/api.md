@@ -140,6 +140,9 @@ goes through as if it had been left out. `errors` names the property by its path
 }
 ```
 
+An item of an array is named by its index, counted from 0: `condition.rules.1.field` is the field
+of a Segment condition's second rule.
+
 The maps whose keys are yours stay open: a Contact's `customFields`, an Event's `properties` and an
 email's `variables` take any key. Responses stay open too: a later release may add a property to a
 response, so ignore the ones you do not know.
