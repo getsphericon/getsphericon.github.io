@@ -79,6 +79,16 @@ chats started in that browser. A token that does not verify, or a key sent besid
 from the token's, is refused with `422`. After a proven identify, `telegramStartLink()` asks for a
 link of the proven contact. Regenerating the secret replaces it at once.
 
+When the person signs out, tell the tracker, so the next person on the same browser is not taken
+for them:
+
+```js
+_omq.push(['reset'])
+```
+
+`reset` forgets the identity token and starts a new visitor id; events already queued keep the
+visitor they were made for.
+
 The same contract is available as an HTTP API if you would rather send from your server, using
 the collect key in an `x-collect-key` header:
 

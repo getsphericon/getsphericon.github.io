@@ -28,26 +28,32 @@ it up takes an Owner or an Admin.
 
 1. Enter the host. Any name below a domain you own works (`t.example.com`, `links.mail.example.com`),
    but not the domain itself.
-2. At your DNS provider, add the `CNAME` record the page shows: the host, pointing at the edge host.
+2. At your DNS provider, add the two records the page shows, and keep both: the `CNAME` of the host,
+   pointing at the edge host, and the `TXT` record `_sphericon-tracking.<your host>`, whose value
+   names this workspace's tracking domain. The CNAME sends the host to your instance; the TXT shows it
+   is this workspace's, since every workspace on the instance points its hosts at the same edge.
 3. Click **Verify**, or wait: a host that is DNS verified or Serving is rechecked every 15 minutes. A
    **Pending** host is only checked when you click **Verify**.
 4. The host shows where it stands:
-   - **Pending**: the CNAME is missing or does not point at the edge host yet.
-   - **DNS verified**: the CNAME is right, so the edge may now get a certificate for the host. Mail
+   - **Pending**: the CNAME is missing or does not point at the edge host yet, or the TXT record is
+     missing or holds another value.
+   - **DNS verified**: both records are right, so the edge may now get a certificate for the host. Mail
      and the snippet still use the instance's host.
    - **Serving**: Sphericon fetched `https://<your host>/.well-known/sphericon-tracking` and got the
      expected answer, so HTTPS works. All new tracked mail of the workspace builds its links on the
      host, and the snippet on the Tracking page loads from it.
 
 A certificate takes time to issue, so a host stays **DNS verified** until HTTPS answers. Until it is
-**Serving**, no message carries a link that could fail TLS. If a later check finds the CNAME gone or
-HTTPS broken, the host drops back, new mail goes out on the instance's host again, and the workspace
+**Serving**, no message carries a link that could fail TLS. Every check needs both records, not only
+the first one. If a later check finds the CNAME or the TXT gone, or HTTPS broken, the host drops back, new mail goes out on the instance's host again, and the workspace
 Owners are told.
 
 If the host stays **Pending** with a note that another workspace has already verified it, the host
 belongs to a different workspace on this instance (a host belongs to one workspace at a time). Your
-CNAME may be right, but the host cannot be yours until that workspace releases it, so choose another
-one. The same fact is the `reason` (`host_taken`) of the tracking domain in the API.
+records may be right, but the host is still that workspace's. Once the TXT names only your
+workspace, the other workspace loses the host at its next check, and yours verifies it. The same
+fact is the `reason` (`host_taken`) of the tracking domain in the API, which also shows both records
+(`record` and `ownershipRecord`).
 
 The host serves only the tracking paths: clicks, opens, the one-click unsubscribe, and the tracker
 (`/t.js` and `/collect`) for your workspace's own collect key. The unsubscribe and confirm pages
@@ -66,14 +72,15 @@ built with, so Sphericon never drops a host that has served while it may still b
   replacement becomes the current host.
 - A **retired** host gets no new mail and no new snippet, but keeps serving the links and snippets
   already out there, and no other workspace can take it. It goes when its CNAME no longer points at
-  the edge (the Owners are told), or when you click **Forget**, which breaks those old links at once.
+  the edge or its TXT record is gone (the Owners are told), or when you click **Forget**, which breaks those old links at once.
   Setting a retired host again brings it back.
 
-So once you have moved to a new host, keep the old CNAME in place for as long as old mail may still be
+So once you have moved to a new host, keep the old CNAME and TXT in place for as long as old mail may still be
 opened or clicked and old snippets may still run. Removing a host is not available to agents over MCP
 for the same reason. The design is in
 [ADR 0071](https://github.com/getsphericon/sphericon/blob/main/docs/adr/0071-a-tracking-domain-is-the-workspaces-own-not-a-sending-domains.md),
-[ADR 0038](https://github.com/getsphericon/sphericon/blob/main/docs/adr/0038-tracking-domains-are-core-and-the-edge-is-not.md)
+[ADR 0038](https://github.com/getsphericon/sphericon/blob/main/docs/adr/0038-tracking-domains-are-core-and-the-edge-is-not.md),
+[ADR 0173](https://github.com/getsphericon/sphericon/blob/main/docs/adr/0173-a-tracking-domain-is-held-by-the-workspace-its-txt-names.md)
 and [ADR 0036](https://github.com/getsphericon/sphericon/blob/main/docs/adr/0036-paths-embedded-in-sent-mail-and-customer-sites-outlive-a-major.md).
 
 ## Who may be mailed
