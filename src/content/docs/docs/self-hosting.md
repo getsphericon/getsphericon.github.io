@@ -66,7 +66,7 @@ You already have PostgreSQL somewhere.
 2. Run the image, which migrates the database on start:
 
    ```sh
-   docker run -d --name sphericon -p 3000:3000 \
+   docker run -d --name sphericon -p 3000:3000 --stop-timeout 40 \
      -e SPHERICON_ENV=production \
      -e SPHERICON_DATABASE_URL="postgres://user:pass@db:5432/sphericon?sslmode=require" \
      -e SPHERICON_JWT_SECRET="<from step 1>" \
@@ -75,6 +75,10 @@ You already have PostgreSQL somewhere.
      -e SPHERICON_DB_AUTO_MIGRATE=true \
      ghcr.io/getsphericon/sphericon:latest
    ```
+
+   `--stop-timeout 40` gives sphericon time to hand its running jobs back to the queue on a stop:
+   Docker kills a container 10 seconds after the stop signal by default, and a shutdown takes up to
+   30. The `compose.yaml` above and the Helm chart set the same 40 seconds.
 
 3. Put a [reverse proxy with HTTPS](#https-and-reverse-proxy) in front of port 3000.
 4. Go to [First run](#first-run).
