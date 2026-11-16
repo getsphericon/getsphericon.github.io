@@ -176,7 +176,7 @@ curl https://sphericon.example.com/api/events/batch \
   webhook endpoint receives it, so loading history never sends mail.
 - Every backfilled event needs an `occurredAt` that has already passed.
 - Without `backfill`, an event whose `occurredAt` is more than 72 hours old is refused with a
-  message that names `backfill` (the window is `SPHERICON_EVENT_LIVE_WINDOW_HOURS`). `/collect` is
+  message that names `backfill` (the window is `SPHERICON_EVENT_LIVE_WINDOW`). `/collect` is
   not limited.
 - An event with a `clientEventId` that is already stored changes nothing, so a load that broke off
   halfway is resent from the start. The id is unique within the Workspace.

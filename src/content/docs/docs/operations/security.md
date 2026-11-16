@@ -60,7 +60,7 @@ After any rotation, record the new value in your secret store before you discard
 `SPHERICON_ENCRYPTION_KEY` is a Tink keyset: it holds several keys, one of them primary. New
 secrets are encrypted under the primary key and every key in the keyset can still decrypt, so a
 rotation is a sequence you can stop after any step. The commands read the keyset from
-`SPHERICON_ENCRYPTION_KEY` (or its `_FILE`); `rotate` and `retire` need no database and print the
+`SPHERICON_ENCRYPTION_KEY`; `rotate` and `retire` need no database and print the
 new keyset on stdout, so capture it:
 
 1. **Rotate.** `sphericon encryption-key rotate` adds a new primary key and prints the new keyset.

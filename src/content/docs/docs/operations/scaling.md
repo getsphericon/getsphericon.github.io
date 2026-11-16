@@ -46,12 +46,12 @@ per client connection. There is no PgBouncer-compatible mode.
 The data that grows with traffic is the **Event** table. It is pruned in core by a background job.
 The policy is [ADR 0019](https://github.com/getsphericon/sphericon/blob/main/docs/adr/0019-event-retention.md).
 
-| Variable                          | Default | `0` means | What it controls                                                                                                                                                                               |
-| --------------------------------- | ------- | --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `SPHERICON_EVENTS_RETENTION_DAYS` | `400`   | disabled  | Deletes **analytical** Events (opens, clicks, deliveries, customer-tracked actions) older than the window, measured from when the row was inserted. Runs daily at 03:00 UTC, in small batches. |
+| Variable                     | Default | `0` means | What it controls                                                                                                                                                                               |
+| ---------------------------- | ------- | --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `SPHERICON_EVENTS_RETENTION` | `9600h` | disabled  | Deletes **analytical** Events (opens, clicks, deliveries, customer-tracked actions) older than the window, measured from when the row was inserted. Runs daily at 03:00 UTC, in small batches. |
 
-Negative values are rejected at startup. Deleting an Event is irreversible, so choose the window
-deliberately; to keep everything, set `SPHERICON_EVENTS_RETENTION_DAYS=0`.
+The window is a Go duration: `9600h` is 400 days. Deleting an Event is irreversible, so choose the
+window deliberately; to keep everything, set `SPHERICON_EVENTS_RETENTION=0`.
 
 ### What is kept
 
@@ -68,7 +68,7 @@ deliberately; to keep everything, set `SPHERICON_EVENTS_RETENTION_DAYS=0`.
 ### Segment look-back cap
 
 A [Segment](/docs/guide/segments) condition that looks back further than the retention window only
-sees Events that still exist, so its results are capped by `SPHERICON_EVENTS_RETENTION_DAYS`. For example,
+sees Events that still exist, so its results are capped by `SPHERICON_EVENTS_RETENTION`. For example,
 "opened an email in the last 500 days" behaves like "in the last 400 days" on a default
 instance. This is a documented product limit, not a bug. Evidentiary Events are exempt from the
 deletion, so conditions on them are not capped.
@@ -84,5 +84,5 @@ queue, is the durable record of what happened.
 ## Disk
 
 Disk follows the Event rate. With the default window, expect the `events` table to level off at
-roughly 400 days of analytical traffic plus all evidentiary Events. Lower `SPHERICON_EVENTS_RETENTION_DAYS`
+roughly 400 days of analytical traffic plus all evidentiary Events. Lower `SPHERICON_EVENTS_RETENTION`
 to cap disk and backup size sooner.

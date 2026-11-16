@@ -410,10 +410,9 @@ through the release that backfills the ids first if you skipped it. After the up
 The chart lives in `charts/sphericon` and is published at every release as an OCI artifact,
 `oci://ghcr.io/getsphericon/charts/sphericon`, with the chart version equal to the app version.
 Create a Secret with `SPHERICON_DATABASE_URL`, `SPHERICON_JWT_SECRET` and `SPHERICON_ENCRYPTION_KEY` first and
-pass its name as `existingSecret` (the chart refuses to render without it). To hand the secrets over as
-files instead (see [Secrets from files](/docs/configuration#secrets-from-files)), set `secretFiles.secretName` to the Secret
-and `secretFiles.keys` to the variables it holds: the chart mounts it at `/run/secrets/sphericon` and sets
-each `<KEY>_FILE`; `existingSecret` is then optional.
+pass its name as `existingSecret` (the chart refuses to render without it); the chart exports every key of
+the Secret as an environment variable, so put any other secret variable, such as `SPHERICON_SMTP_PASS`, in
+it too.
 
 ```sh
 helm install sphericon oci://ghcr.io/getsphericon/charts/sphericon \
