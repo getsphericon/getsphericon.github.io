@@ -117,15 +117,32 @@ Errors are [RFC 7807](https://www.rfc-editor.org/rfc/rfc7807) `application/probl
 `status` and `title` are always present, and `detail` for client errors. Server errors (`5xx`)
 carry no detail; quote the `X-Request-Id` response header when you report one.
 
-| Status | Meaning                                                              |
-| ------ | -------------------------------------------------------------------- |
-| `400`  | The request could not be parsed.                                     |
-| `401`  | The token is missing, invalid, revoked or expired.                   |
-| `403`  | The token lacks the required scope.                                  |
-| `404`  | The resource does not exist in this workspace.                       |
-| `413`  | The body is larger than the configured limit.                        |
-| `409`  | A request with the same `Idempotency-Key` is still in flight.        |
-| `422`  | Validation failed, or a reference points at another workspace's row. |
+| Status | Meaning                                                               |
+| ------ | --------------------------------------------------------------------- |
+| `400`  | The request could not be parsed, or its body has an unknown property. |
+| `401`  | The token is missing, invalid, revoked or expired.                    |
+| `403`  | The token lacks the required scope.                                   |
+| `404`  | The resource does not exist in this workspace.                        |
+| `413`  | The body is larger than the configured limit.                         |
+| `409`  | A request with the same `Idempotency-Key` is still in flight.         |
+| `422`  | Validation failed, or a reference points at another workspace's row.  |
+
+A request body is a closed object: a property the API does not declare, at any depth, is refused
+with `400` instead of being ignored. A misspelt optional field (`segment_id` for `segmentId`) never
+goes through as if it had been left out. `errors` names the property by its path:
+
+```json
+{
+  "status": 400,
+  "title": "Bad Request",
+  "detail": "…",
+  "errors": { "content.subjct": ["unknown property: the contract does not declare it"] }
+}
+```
+
+The maps whose keys are yours stay open: a Contact's `customFields`, an Event's `properties` and an
+email's `variables` take any key. Responses stay open too: a later release may add a property to a
+response, so ignore the ones you do not know.
 
 ## Idempotent sends
 
