@@ -40,17 +40,52 @@ _omq.push(['track', 'viewed_pricing', { plan: 'team' }])
 _omq.push(['identify', { email: 'ada@example.com', subjectId: 'user_42' }])
 ```
 
-`identify` binds the visitor to a contact and asserts its alias keys: `subjectId`, `email` and
+`identify` binds the visitor to a contact and names its alias keys: `subjectId`, `email` and
 `phone`. Everything that visitor did earlier, while anonymous, is stitched onto the contact, so
 pre-signup behavior becomes visible to segments.
+
+The collect key sits in your page, so anyone can call `identify` with any address. On its own an
+identify is therefore a **claim**: it finds or creates the contact by its keys, but gives a contact
+that already exists no key it lacks and only the values it has none of, never replacing or clearing
+one, and binds the visitor only while the visitor belongs to no other contact. A Telegram chat
+started from the browser stays with the visitor and reaches no contact.
+
+### Prove who is signed in
+
+When a person signs in to your site, prove it with an **identity token**. Generate the identity
+secret in the tracking section of the workspace **Settings** (owners and admins), keep it on your
+server, and have the server sign a JWT with HS256 for the signed-in person when it renders the page:
+
+```js
+// On your server, for example with the jsonwebtoken package
+const identityToken = jwt.sign(
+  { sub: user.id, email: user.email },
+  process.env.SPHERICON_IDENTITY_SECRET,
+  { algorithm: 'HS256', expiresIn: '1h' },
+)
+```
+
+`sub` is the `subjectId`; `email` and `phone` are optional, and at least one of the three is
+required. `exp` is required and may be at most a day ahead. Pass the token to the page and send it
+with the identify:
+
+```js
+_omq.push(['identify', { identityToken: '<the token your server signed>', traits: { firstName: 'Ada' } }])
+```
+
+An identify that carries the token is **proven**: the contact's keys are the token's, it fills keys
+and replaces values, moves the visitor from another contact, and gives the contact the Telegram
+chats started in that browser. A token that does not verify, or a key sent beside it that differs
+from the token's, is refused with `422`. After a proven identify, `telegramStartLink()` asks for a
+link of the proven contact. Regenerating the secret replaces it at once.
 
 The same contract is available as an HTTP API if you would rather send from your server, using
 the collect key in an `x-collect-key` header:
 
-| Endpoint                 | Purpose                                      |
-| ------------------------ | -------------------------------------------- |
-| `POST /collect/identify` | Bind a `visitorId` to alias keys and traits. |
-| `POST /collect/events`   | Record a batch of events for visitors.       |
+| Endpoint                 | Purpose                                                                        |
+| ------------------------ | ------------------------------------------------------------------------------ |
+| `POST /collect/identify` | Bind a `visitorId` to alias keys and traits, with an optional `identityToken`. |
+| `POST /collect/events`   | Record a batch of events for visitors.                                         |
 
 ## Retrying from a server client
 
@@ -95,17 +130,20 @@ contact at ingest, never by email, so changing someone's email does not orphan t
 ## Core attributes
 
 A trait named after a core attribute writes that attribute: `firstName`, `lastName`, `timeZone`,
-`country`, `locale`, `birthday`, `city` and `avatar`. A value you assert overwrites the stored one,
-`null` clears it and a missing key keeps it. A value that is not valid for its attribute, such as
+`country`, `locale`, `birthday`, `city` and `avatar`. In a proven identify or through the API a value
+you assert overwrites the stored one, `null` clears it and a missing key keeps it; a claimed identify
+only fills an attribute the contact has none of. A value that is not valid for its attribute, such as
 an unknown time zone, `USA` as a country or a photo address that is not https, is dropped, and the
 rest of the identify still succeeds. `subjectId`, `email` and `phone` only fill a contact that has
-none. The tracker also sends the browser's time zone and language, which fill the time zone and
+none, and a claimed identify fills none of an existing contact. The tracker also sends the browser's time zone and language, which fill the time zone and
 locale only while the contact has none.
 
 ## Custom fields
 
-Any trait or property you send under an unknown key is created as a typed **custom field** with
-an inferred type, or you set the type yourself, for example a date-time. A date without an offset is
+A trait you send through the API or an import under an unknown key is created as a typed **custom
+field** with an inferred type, or you set the type yourself, for example a date-time. The tracker's
+`identify` writes only custom fields the workspace has defined and drops other traits, so define the
+fields your site sends first. A date without an offset is
 read in the workspace time zone. From that moment it is a first-class, renameable field the segment builder
 offers, not an anonymous bag of keys.
 
