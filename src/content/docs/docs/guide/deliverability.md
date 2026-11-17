@@ -119,6 +119,32 @@ before marketing mail reaches it. The confirmation is recorded as an immutable
 `marketing.confirmed` event, which gives you proof of consent and can also trigger a welcome
 automation.
 
+## Dedicated IPs on Amazon SES
+
+SES sends from the account's shared pool unless a message names a **configuration set** that
+routes it to a dedicated IP pool, standard or managed (a managed pool warms itself up there). Name
+the set on the SES Integration (**Configuration set** in its credentials, `configurationSet` in the
+API) and every message sent through it names that set; leave it empty to send through the default
+pool. A name is up to 64 letters, digits, hyphens and underscores.
+
+To keep the reputation of marketing mail apart from transactional mail, connect one SES Integration
+per stream, each with its own configuration set:
+
+1. A `transactional` Integration whose set routes to the transactional pool. Make it the email
+   default: transactional mail always goes through the default.
+2. A `marketing` Integration whose set routes to the marketing pool. Choose it on each broadcast
+   and on each email step of an automation.
+
+Both Integrations send from the same SES account, and each reads the account's whole send quota: set
+a manual Provider limit on each so that together they stay within it. Each has its own hook, so give
+each set an SNS destination for bounces and complaints as in [Amazon SES](#amazon-ses-ses) below.
+
+Saving the Integration asks SES whether the set exists. If SES answers that it has no such set, the
+Integration still saves, with a warning in **Settings → Sending** (`configurationSetMissing` in the
+API). Until the set exists SES refuses every message the Integration sends, and a refused message is
+not sent again. If SES does not answer (the credentials may not call `ses:GetConfigurationSet`, or
+an SES-compatible service has no such call), the check is skipped.
+
 ## Bounces and complaints
 
 Bounces and complaints reach the suppression list only through an Integration's **hook**: the
