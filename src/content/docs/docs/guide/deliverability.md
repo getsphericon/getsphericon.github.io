@@ -150,8 +150,8 @@ an SES-compatible service has no such call), the check is skipped.
 Bounces and complaints reach the suppression list only through an Integration's **hook**: the
 provider posts a callback to the Integration's hook URL, and a **Preset** verifies the request and
 turns it into a **Delivery notice** for one address: a bounce, a spam complaint, a delivery, a delay
-or a drop. Only permanent bounces and complaints suppress an address; a soft bounce still counts in
-the deliverability rates, and a delivery, delay or drop never suppresses. The Complaint rate is
+or a drop. Only permanent bounces and complaints suppress an address; a soft bounce counts in no
+deliverability rate, and a delivery, delay or drop never suppresses. The Complaint rate is
 complaints over delivered mail, so it needs a provider that reports deliveries. The design is
 recorded in
 [ADR 0037](https://github.com/getsphericon/sphericon/blob/main/docs/adr/0037-inbound-provider-callbacks-are-presets-on-an-integration.md).
