@@ -1,6 +1,6 @@
 ## Git
 
-Never switch branches (`git checkout`, `git switch`) in the main working copy. It stays on `main`. For work on any other branch, use a separate worktree (`git worktree add`).
+Never switch branches (`git checkout`, `git switch`) in the main working copy. It stays on `main`. For work on any other branch, use a separate worktree under `.worktrees/<name>` (gitignored): `EnterWorktree` and `claude --worktree` put it there through the hooks in `.claude/settings.json`; by hand, `git worktree add --no-track -b worktree-<name> .worktrees/<name> origin/main` after a fetch.
 
 ## Development
 
