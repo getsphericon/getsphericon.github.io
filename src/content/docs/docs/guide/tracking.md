@@ -89,13 +89,31 @@ _omq.push(['reset'])
 `reset` forgets the identity token and starts a new visitor id; events already queued keep the
 visitor they were made for.
 
+### Recognize recipients who follow a tracked link
+
+A person who follows a link of your message to your site lands as an anonymous visitor. Turn on
+**link identity tokens** in the tracking section of the workspace **Settings** (owners and admins)
+and list the host names of your own sites, such as `shop.example.com`. A host is matched exactly,
+so list a subdomain on its own. From then on, the click of a tracked link to an `https` address on
+a listed host adds a signed token naming the recipient, in the `sph_lit` query parameter. The
+token is added only when the click is recorded, so a message whose recipient refused tracking never
+carries it, and it is ignored 7 days after its message was sent.
+
+The tracker on the page removes the token from the address as it loads, and sends it on the
+person's first click, key press or touch, so a link scanner that only loads the page binds no one.
+The visitor is then bound to the recipient's contact and its earlier page views are stitched onto
+it, as a claim binds: a visitor that already belongs to another contact stays where it is, and the
+contact gets none of the visitor's Telegram chats. If the message was forwarded, whoever follows
+the link is taken for the recipient; only a proven identify moves that visitor to someone else.
+
 The same contract is available as an HTTP API if you would rather send from your server, using
 the collect key in an `x-collect-key` header:
 
-| Endpoint                 | Purpose                                                                        |
-| ------------------------ | ------------------------------------------------------------------------------ |
-| `POST /collect/identify` | Bind a `visitorId` to alias keys and traits, with an optional `identityToken`. |
-| `POST /collect/events`   | Record a batch of events for visitors.                                         |
+| Endpoint                        | Purpose                                                                                             |
+| ------------------------------- | --------------------------------------------------------------------------------------------------- |
+| `POST /collect/identify`        | Bind a `visitorId` to alias keys and traits, with an optional `identityToken`.                      |
+| `POST /collect/events`          | Record a batch of events for visitors.                                                              |
+| `POST /collect/link-identities` | Bind a `visitorId` with the link identity token of a tracked link; answers `204` whatever it binds. |
 
 ## Retrying from a server client
 
