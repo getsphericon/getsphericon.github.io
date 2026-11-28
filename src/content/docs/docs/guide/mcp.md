@@ -128,8 +128,8 @@ final send to a human:
 ## Let an agent set up your sending domain
 
 The **set-up-sending-domain** prompt takes an agent from "I want to send from `mail.example.com`"
-to a verified domain. The agent adds the domain, reads its DKIM, SPF and DMARC records,
-publishes them, triggers the check and reports back. A DNS change takes minutes to hours to be
+to a verified domain. The agent adds the domain, reads its DKIM and DMARC records and the envelope
+of each email integration, where SPF is checked, publishes the records, triggers the check and reports back. A DNS change takes minutes to hours to be
 seen, so a failed check right after publishing is expected; the agent says so and checks again
 later instead of looping.
 
@@ -147,5 +147,7 @@ agent** button that puts the records and the steps on the clipboard so you can p
 agent, with or without MCP.
 
 The agent changes only the domain you named and only the records Sphericon lists. It creates
-missing records, leaves existing ones alone and deletes nothing. If an SPF or DMARC record already
-exists at that host, it does not overwrite it and asks you to merge the values.
+missing records, leaves existing ones alone and deletes nothing. If a DMARC record already exists at
+that host, it does not overwrite it and asks you to merge the values. It publishes no SPF record for
+the domain and never sets a custom MAIL FROM in Amazon SES: it tells you what the envelopes show,
+and you set it there.

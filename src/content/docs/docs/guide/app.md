@@ -71,8 +71,8 @@ tracking domain that serves the snippet and the links in your mail on a host of 
 [Tracking domain](/docs/guide/deliverability#tracking-domain).
 
 **Sending.** Integrations (the SMTP or SES providers the workspace sends through, with the
-inbound hook for bounces and complaints), sending domains with the DKIM, SPF and DMARC records to
-publish, and the suppression list of addresses
+inbound hook for bounces and complaints), sending domains with the DKIM and DMARC records to
+publish and each integration's envelope, where SPF is checked, and the suppression list of addresses
 that are never mailed. See [Deliverability and consent](/docs/guide/deliverability) and
 [Presets for provider callbacks](/docs/guide/presets).
 

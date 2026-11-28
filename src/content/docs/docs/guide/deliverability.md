@@ -16,6 +16,19 @@ a broadcast's test send to your own address, which falls back to the platform's 
 domain is verified ([Quickstart](/docs/guide/quickstart#see-an-email-before-dns)). DNS can take time
 and nothing else in setup waits for it.
 
+A sending domain has no SPF record of its own. Receivers check SPF on the envelope domain (the
+`MAIL FROM`, or `Return-Path`) your provider sends with, not on the domain in the From address. So
+the domain's records show, for each email integration, where that envelope is set:
+
+- **SMTP**: set at the provider that relays your mail; configure SPF there.
+- **Amazon SES**: Sphericon reads the domain's identity in SES with the integration's credentials
+  (`ses:GetEmailIdentity`) and shows whether SES sends with its own MAIL FROM domain or with a
+  custom one you set, with SES's status of it and what SES does when its MX record fails. For SPF to
+  align with your domain, set a custom MAIL FROM on the domain's identity in SES. Sphericon reads it
+  with every check of the domain and never changes it.
+
+DKIM is the one requirement: SPF never holds a send.
+
 ## Tracking domain
 
 By default the links in your mail (opens, clicks, the one-click unsubscribe) and the tracking snippet
